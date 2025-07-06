@@ -5,7 +5,7 @@
 #include "ST_ItemDataStructs.generated.h"
 
 UENUM()
-enum EItemQuality : uint8
+enum class EItemQuality : uint8
 {
 	Shoddy UMETA(DisplayName = "Shoddy"),
 	Common UMETA(DisplayName = "Common"),
@@ -15,7 +15,7 @@ enum EItemQuality : uint8
 };
 
 UENUM()
-enum EItemType : uint8
+enum class EItemType : uint8
 {
 		Weapon UMETA(DisplayName = "Weapon"),
 		Melee UMETA(DisplayName = "Melee"),
@@ -102,6 +102,9 @@ USTRUCT()
 struct FItemData : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, Category="Item Data")
+	FName ItemID;	
 
 	UPROPERTY(EditAnywhere, Category="Item Data")
 	EItemType ItemType;
