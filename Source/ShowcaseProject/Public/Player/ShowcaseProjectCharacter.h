@@ -4,8 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/InteractionInterface.h"
 #include "Logging/LogMacros.h"
 #include "ShowcaseProjectCharacter.generated.h"
+
+USTRUCT()
+struct FInteractionData
+{
+	GENERATED_USTRUCT_BODY()
+
+	FInteractionData(): CurrentInteractable(nullptr), LastInteractionCheckTime(0.0f) {}
+	
+	UPROPERTY()
+	AActor* CurrentInteractable;
+
+	UPROPERTY()
+	float LastInteractionCheckTime;
+};
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -20,6 +35,22 @@ class AShowcaseProjectCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+public:
+	//PROPERTIES
+
+	//Functions
+	AShowcaseProjectCharacter();
+	
+	/** Returns CameraBoom subobject **/
+	FORCEINLINE class USpringArmComponent *GetCameraBoom() const { return CameraBoom; }
+
+	/** Returns FollowCamera subobject **/
+	FORCEINLINE class UCameraComponent *GetFollowCamera() const { return FollowCamera; }
+	
+	FORCEINLINE bool IsInteracting() const { return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction);};
+	
+protected:
+	//PROPERTIES
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent *CameraBoom;
@@ -44,24 +75,45 @@ class AShowcaseProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *LookAction;
 
-public:
-	AShowcaseProjectCharacter();
+	/** Interact Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *InteractAction;
+	
+	/** Target interactable object */
+	UPROPERTY(VisibleAnywhere, Category="Character | Interaction")
+	TScriptInterface<IInteractionInterface> TargetInteractable;
 
-protected:
+	/** Frequency at which the character checks for interactable objects */
+	float InteractionCheckFrequency;
+
+	/** Distance at which the character can interact with objects */
+	float InteractionCheckDistance;
+
+	/** Timer handle for interaction checks */
+	FTimerHandle TimerHandle_Interaction;
+
+	/** Interaction data for the character */
+	FInteractionData InteractionData;
+	
+	//Functions
+	void PerformInteractionCheck();
+	void FoundInteractable(AActor *NewInteractable);
+	void NoInteractableFound();
+	void BeginInteract();
+	void EndInteract();
+	void Interact();
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay() override;
+
+	
 	/** Called for movement input */
 	void Move(const FInputActionValue &Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue &Value);
 
-protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
-public:
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent *GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent *GetFollowCamera() const { return FollowCamera; }
 };
