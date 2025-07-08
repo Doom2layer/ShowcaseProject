@@ -8,6 +8,8 @@
 #include "Logging/LogMacros.h"
 #include "ShowcaseProjectCharacter.generated.h"
 
+class AShowcaseHUD;
+
 USTRUCT()
 struct FInteractionData
 {
@@ -83,6 +85,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Character | Interaction")
 	TScriptInterface<IInteractionInterface> TargetInteractable;
 
+	/** Reference to the HUD */
+	UPROPERTY()
+	AShowcaseHUD* HUD;
+
 	/** Frequency at which the character checks for interactable objects */
 	float InteractionCheckFrequency;
 
@@ -94,6 +100,7 @@ protected:
 
 	/** Interaction data for the character */
 	FInteractionData InteractionData;
+
 	
 	//Functions
 	void PerformInteractionCheck();

@@ -2,6 +2,7 @@
 
 
 #include "Interfaces/InteractionInterface.h"
+#include "Player/ShowcaseProjectCharacter.h"
 
 // Add default functionality here for any IInteractionInterface functions that are not pure virtual.
 
@@ -21,6 +22,6 @@ void IInteractionInterface::EndInteract()
 {
 }
 
-void IInteractionInterface::Interact()
+void IInteractionInterface::Interact(AShowcaseProjectCharacter* PlayerCharacter)
 {
 }

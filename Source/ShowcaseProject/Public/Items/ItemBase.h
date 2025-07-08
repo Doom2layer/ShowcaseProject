@@ -20,51 +20,51 @@ public:
 	// UPROPERTY()
 	// UInventoryComponent* OwningInventory;
 	
-	UPROPERTY(VisibleAnywhere, Category="Item Data", meta=(UIMin = "1", UIMax = "100"))
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	int32 Quantity;
 	
-	UPROPERTY(EditAnywhere, Category="Item Data")
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	FName ItemID;	
 
-	UPROPERTY(EditAnywhere, Category="Item Data")
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	EItemType ItemType;
 
-	UPROPERTY(EditAnywhere, Category="Item Data")
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	EItemQuality ItemQuality;
 
-	UPROPERTY(EditAnywhere, Category="Item Data")
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	FItemStatistics ItemStatistics;
 
-	UPROPERTY(EditAnywhere, Category="Item Data")
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	FItemTextData ItemTextData;
 
-	UPROPERTY(EditAnywhere, Category="Item Data")
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	FItemNumericData ItemNumericData;
 
-	UPROPERTY(EditAnywhere, Category="Item Data")
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	FItemAssetData ItemAssetData;
 
 	// FUNCTIONS
 	UItemBase();
 	
-	UFUNCTION(Category= "Item Data")
+	UFUNCTION(Category= "Item")
 	UItemBase* CreateItemCopy() const;
 	
-	UFUNCTION(Category= "Item Data")
+	UFUNCTION(Category= "Item")
 	FORCEINLINE float GetItemStackWeight() const {return Quantity * ItemNumericData.Weight;};
 
-	UFUNCTION(Category= "Item Data")
+	UFUNCTION(Category= "Item")
 	FORCEINLINE float GetItemSingleWeight() const {return ItemNumericData.Weight;};
 
-	UFUNCTION(Category= "Item Data")
+	UFUNCTION(Category= "Item")
 	FORCEINLINE bool IsFullItemStack() const {return Quantity == ItemNumericData.MaxStackSize;};
 
-	UFUNCTION(Category= "Item Data")
+	UFUNCTION(Category= "Item")
 	void SetQuantity(const int32 NewQuantity);
 	
-	UFUNCTION(Category= "Item Data")
+	UFUNCTION(Category= "Item")
 	virtual void UseItem(AShowcaseProjectCharacter *Character);
 	
 protected:
-	bool operator==(const FName& OtherID) const{ return ItemID == OtherID;  };
+	bool operator==(const FName& OtherID) const{ return this->ItemID == OtherID;  };
 };

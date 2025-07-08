@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "DrawDebugHelpers.h"
+#include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -116,6 +117,8 @@ void AShowcaseProjectCharacter::Tick(float DeltaSeconds)
 void AShowcaseProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	HUD = Cast<AShowcaseHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 }
 
 void AShowcaseProjectCharacter::PerformInteractionCheck()
@@ -143,9 +146,8 @@ void AShowcaseProjectCharacter::PerformInteractionCheck()
 		{
 			if (TraceHitResult.GetActor()->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
 			{
-				const float Distance = (TraceStartLocation - TraceHitResult.ImpactPoint).Size();
 				// Check if the interactable is within the interaction distance and is not the current interactable Call FoundInteractable
-				if (TraceHitResult.GetActor() != InteractionData.CurrentInteractable && Distance <= InteractionCheckDistance)
+				if (TraceHitResult.GetActor() != InteractionData.CurrentInteractable )
 				{
 					FoundInteractable(TraceHitResult.GetActor());
 					return;
@@ -178,6 +180,8 @@ void AShowcaseProjectCharacter::FoundInteractable(AActor* NewInteractable)
 	InteractionData.CurrentInteractable = NewInteractable;
 	TargetInteractable = NewInteractable;
 
+	HUD->UpdateInteractionWidget(&TargetInteractable->InteractableData);
+	
 	TargetInteractable->BeginFocus();
 }
 
@@ -196,7 +200,8 @@ void AShowcaseProjectCharacter::NoInteractableFound()
 		}
 
 		// Hide the Interaction Widget on the HUD
-
+		HUD->HideInteractionWidget();
+		
 		InteractionData.CurrentInteractable = nullptr;
 		TargetInteractable = nullptr;
 	}
@@ -242,7 +247,7 @@ void AShowcaseProjectCharacter::Interact()
 
 	if (IsValid(TargetInteractable.GetObject()))
 	{
-		TargetInteractable->Interact();
+		TargetInteractable->Interact(this);
 	}
 }
 
