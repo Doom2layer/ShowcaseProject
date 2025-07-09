@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "ShowcaseProjectCharacter.generated.h"
 
+class UInventoryComponent;
 class AShowcaseHUD;
 
 USTRUCT()
@@ -49,7 +50,11 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent *GetFollowCamera() const { return FollowCamera; }
 	
-	FORCEINLINE bool IsInteracting() const { return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction);};
+	FORCEINLINE bool IsInteracting() const { return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction);}
+
+	FORCEINLINE UInventoryComponent* GetInventory() const { return PlayerInventory; }
+
+	void UpdateInteractionWidget() const;
 	
 protected:
 	//PROPERTIES
@@ -100,6 +105,10 @@ protected:
 
 	/** Interaction data for the character */
 	FInteractionData InteractionData;
+
+	/** Inventory component */
+	UPROPERTY(VisibleAnywhere, Category="Character | Inventory")
+	UInventoryComponent* PlayerInventory;
 
 	
 	//Functions

@@ -6,6 +6,8 @@
 #include "Data/ST_ItemDataStructs.h"
 #include "ItemBase.generated.h"
 
+class UInventoryComponent;
+
 /**
  * 
  */
@@ -17,8 +19,8 @@ class SHOWCASEPROJECT_API UItemBase : public UObject
 public:
 	// PROPERTIES
 
-	// UPROPERTY()
-	// UInventoryComponent* OwningInventory;
+	UPROPERTY()
+	UInventoryComponent* OwningInventory;
 	
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	int32 Quantity;
@@ -44,8 +46,13 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	FItemAssetData ItemAssetData;
 
+	bool bIsCopy;
+	bool bIsPickup;
+
 	// FUNCTIONS
 	UItemBase();
+
+	void ResetItemFlags();
 	
 	UFUNCTION(Category= "Item")
 	UItemBase* CreateItemCopy() const;

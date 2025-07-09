@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "DrawDebugHelpers.h"
+#include "Components/InventoryComponent/InventoryComponent.h"
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -59,7 +60,13 @@ AShowcaseProjectCharacter::AShowcaseProjectCharacter()
 	InteractionCheckDistance = 200.0f; // How far away the character can interact with objects
 
 	BaseEyeHeight = 74.0f; // The height of the character's eyes from the ground, used for interaction checks
+
+	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Player Inventory"));
+	PlayerInventory->SetSlotsCapacity(20);
+	PlayerInventory->SetWeightCapacity(100.0f); // Set the weight capacity of the inventory
 }
+
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -251,7 +258,13 @@ void AShowcaseProjectCharacter::Interact()
 	}
 }
 
-
+void AShowcaseProjectCharacter::UpdateInteractionWidget() const
+{
+	if (IsValid(TargetInteractable.GetObject()))
+	{
+		HUD->UpdateInteractionWidget(&TargetInteractable->InteractableData);
+	}
+}
 
 void AShowcaseProjectCharacter::Move(const FInputActionValue &Value)
 {
@@ -288,3 +301,4 @@ void AShowcaseProjectCharacter::Look(const FInputActionValue &Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+

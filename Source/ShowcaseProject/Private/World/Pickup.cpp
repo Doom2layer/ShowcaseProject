@@ -3,7 +3,9 @@
 
 #include "World/Pickup.h"
 
+#include "Components/InventoryComponent/InventoryComponent.h"
 #include "Items/ItemBase.h"
+#include "Player/ShowcaseProjectCharacter.h"
 
 // Sets default values
 APickup::APickup()
@@ -97,11 +99,32 @@ void APickup::TakePickup(const AShowcaseProjectCharacter* Taker)
 	{
 		if (ItemReference)
 		{
-			//if (UInventoryComponent* PlayerInventory = Taker->GetInventory())
-			/**	{
-			 *	Try To add the item to the player's inventory
-			 *	Based on the return value, we can either destroy the pickup or not
-				} **/
+			if (UInventoryComponent* PlayerInventory = Taker->GetInventory())
+			{
+				const FItemAddResult AddResult = PlayerInventory->HandleAddItem(ItemReference);
+
+				switch (AddResult.OperationResult)
+				{
+				case EItemAddResult::IAR_NoItemAdded:
+					break;
+				case EItemAddResult::IAR_PartialAmountItemAdded:
+					UpdateInteractableData();
+					Taker->UpdateInteractionWidget();
+					break;
+				case EItemAddResult::IAR_AllItemAdded:
+					Destroy();
+					break;
+				}
+				UE_LOG(LogTemplateCharacter, Log, TEXT("Pickup %s taken by %s. Result: %s"), *GetNameSafe(this), *GetNameSafe(Taker), *AddResult.ResultMessage.ToString());
+			}
+			else
+			{
+				UE_LOG(LogTemplateCharacter, Error, TEXT("Pickup %s taken by %s. No inventory component found."), *GetNameSafe(this), *GetNameSafe(Taker));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemplateCharacter, Error, TEXT("Pickup %s taken by %s. No item reference found."), *GetNameSafe(this), *GetNameSafe(Taker));
 		}
 	}
 }
