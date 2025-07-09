@@ -85,6 +85,13 @@ protected:
 	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *InteractAction;
+
+	/** Menu and Inventory Input Actions */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *ToggleInventoryAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *ToggleMainMenuAction;
 	
 	/** Target interactable object */
 	UPROPERTY(VisibleAnywhere, Category="Character | Interaction")
@@ -112,6 +119,8 @@ protected:
 
 	
 	//Functions
+	void ToggleInventoryMenu();
+	void ToggleMainMenu();
 	void PerformInteractionCheck();
 	void FoundInteractable(AActor *NewInteractable);
 	void NoInteractableFound();

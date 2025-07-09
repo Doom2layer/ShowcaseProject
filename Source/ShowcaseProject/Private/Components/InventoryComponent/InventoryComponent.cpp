@@ -102,7 +102,7 @@ void UInventoryComponent::SplitExistingStack(UItemBase* ItemToSplit, const int32
 	}
 }
 
-FItemAddResult UInventoryComponent::HandleNonStackableItem(UItemBase* ItemIn, int32 RequestedAddAmount)
+FItemAddResult UInventoryComponent::HandleNonStackableItem(UItemBase* ItemIn)
 {
 	//Check if the input item has a valid weight
 	if (FMath::IsNearlyZero(ItemIn->GetItemSingleWeight()) || ItemIn->GetItemSingleWeight() < 0)
@@ -120,8 +120,8 @@ FItemAddResult UInventoryComponent::HandleNonStackableItem(UItemBase* ItemIn, in
 		return FItemAddResult::AddedNone(FText::Format(FText::FromString("Could not add item {0} to inventory, item would overflow slots capacity."), ItemIn->ItemTextData.Name));
 	}
 
-	AddNewItemToInventory(ItemIn, RequestedAddAmount);
-	return FItemAddResult::AddedAll(RequestedAddAmount,FText::Format(FText::FromString("Added item {0} {1} to inventory."), ItemIn->ItemTextData.Name, RequestedAddAmount));
+	AddNewItemToInventory(ItemIn, 1);
+	return FItemAddResult::AddedAll(1,FText::Format(FText::FromString("Added item {0} {1} to inventory."), ItemIn->ItemTextData.Name, 1));
 }
 
 int32 UInventoryComponent::HandleStackableItem(UItemBase* ItemIn, int32 RequestedAddAmount)
@@ -137,7 +137,7 @@ FItemAddResult UInventoryComponent::HandleAddItem(UItemBase* InputItem)
 		//Non stackable items
 		if (!InputItem->ItemNumericData.bIsStackable)
 		{
-			return HandleNonStackableItem(InputItem, InitialRequestedAddAmount);
+			return HandleNonStackableItem(InputItem);
 		}
 		//Stackable
 		const int32 StackableAmountAdded = HandleStackableItem(InputItem, InitialRequestedAddAmount);
@@ -160,7 +160,8 @@ FItemAddResult UInventoryComponent::HandleAddItem(UItemBase* InputItem)
 			));
 		}
 	}
-	check(false);
+	// check(false);
+	UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::HandleAddItem: Owner is null or invalid! Cannot add item to inventory."));
 	return FItemAddResult::AddedNone(FText::FromString("An error occurred while trying to add item to inventory."));
 }
 

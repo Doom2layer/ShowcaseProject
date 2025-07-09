@@ -104,6 +104,9 @@ void AShowcaseProjectCharacter::SetupPlayerInputComponent(UInputComponent *Playe
 		// Interacting
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::BeginInteract);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AShowcaseProjectCharacter::EndInteract);
+		//Menu and Inventory
+		EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::ToggleInventoryMenu);
+		EnhancedInputComponent->BindAction(ToggleMainMenuAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::ToggleMainMenu);
 	}
 	else
 	{
@@ -264,6 +267,17 @@ void AShowcaseProjectCharacter::UpdateInteractionWidget() const
 	{
 		HUD->UpdateInteractionWidget(&TargetInteractable->InteractableData);
 	}
+}
+
+void AShowcaseProjectCharacter::ToggleInventoryMenu() 
+{
+	HUD->ToggleInventoryMenu();
+}
+
+void AShowcaseProjectCharacter::ToggleMainMenu() 
+{
+	UE_LOG(LogTemp, Warning, TEXT("Toggling Main Menu"));
+	HUD->ToggleMainMenu();
 }
 
 void AShowcaseProjectCharacter::Move(const FInputActionValue &Value)

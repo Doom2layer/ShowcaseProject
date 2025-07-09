@@ -134,7 +134,7 @@ protected:
 	//Functions
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	FItemAddResult HandleNonStackableItem(UItemBase* ItemIn, int32 RequestedAddAmount);
+	FItemAddResult HandleNonStackableItem(UItemBase* ItemIn);
 	int32 HandleStackableItem(UItemBase* ItemIn, int32 RequestedAddAmount);
 	int32 CalculateWeightAddAmount(UItemBase* ItemIn, int32 RequestedAddAmount) const;
 	int32 CalculateNumberForFullStack(UItemBase* StackableItem, int32 InitialRequestedAddAmount) const;

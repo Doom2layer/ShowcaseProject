@@ -95,7 +95,7 @@ void APickup::Interact(AShowcaseProjectCharacter* PlayerCharacter)
 
 void APickup::TakePickup(const AShowcaseProjectCharacter* Taker)
 {
-	if (IsPendingKillPending())
+	if (!IsPendingKillPending())
 	{
 		if (ItemReference)
 		{

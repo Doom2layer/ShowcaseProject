@@ -56,6 +56,17 @@ protected:
 	UPROPERTY()
 	UInteractionWidget* InteractionWidget;
 
+	UPROPERTY()
+	FTimerHandle TimeDilationTimerHandle;
+	
+	UPROPERTY()
+	float CurrentTimeDilation = 1.0f;
+	UPROPERTY()
+	float TargetTimeDilation = 1.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Time Dilation")
+	float TimeDilationInterpSpeed = 3.0f;
+
 	//FUNCTIONS
 	virtual void BeginPlay() override;
+	void UpdateTimeDilation();
 };

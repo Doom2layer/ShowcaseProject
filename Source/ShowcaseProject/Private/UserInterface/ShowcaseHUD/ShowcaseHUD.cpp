@@ -2,6 +2,8 @@
 
 
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
+
+#include "Kismet/GameplayStatics.h"
 #include "UserInterface/MainMenu/MainMenu.h"
 #include "UserInterface/InventoryMenu/InventoryMenu.h"
 #include "UserInterface/Interaction/InteractionWidget.h"
@@ -46,11 +48,18 @@ void AShowcaseHUD::ToggleMainMenu()
 		if (bIsMainMenuVisible)
 		{
 			MainMenuWidget->SetVisibility(ESlateVisibility::Visible);
-			MainMenuWidget->SetFocus();
+
+			const FInputModeUIOnly InputMode;
+			GetOwningPlayerController()->SetInputMode(InputMode);
+			GetOwningPlayerController()->SetShowMouseCursor(true);
 		}
 		else
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Main Menu Collapsed"));
 			MainMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+			const FInputModeGameOnly InputMode;
+			GetOwningPlayerController()->SetInputMode(InputMode);
+			GetOwningPlayerController()->SetShowMouseCursor(false);
 		}
 	}
 }
@@ -60,15 +69,46 @@ void AShowcaseHUD::ToggleInventoryMenu()
 	if (InventoryMenuWidget)
 	{
 		bIsInventoryMenuVisible = !bIsInventoryMenuVisible;
+
 		if (bIsInventoryMenuVisible)
 		{
 			InventoryMenuWidget->SetVisibility(ESlateVisibility::Visible);
-			InventoryMenuWidget->SetFocus();
+
+			const FInputModeGameAndUI InputMode;
+			GetOwningPlayerController()->SetInputMode(InputMode);
+			GetOwningPlayerController()->SetShowMouseCursor(true);
+
+			// Slowly lerp to 0.1
+			TargetTimeDilation = 0.1f;
 		}
 		else
 		{
 			InventoryMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+			const FInputModeGameOnly InputMode;
+			GetOwningPlayerController()->SetInputMode(InputMode);
+			GetOwningPlayerController()->SetShowMouseCursor(false);
+
+			// Instantly return to normal speed
+			TargetTimeDilation = 1.0f;
+			CurrentTimeDilation = 1.0f;
 		}
+
+		// Start updating time dilation each tick
+		GetWorld()->GetTimerManager().SetTimer(TimeDilationTimerHandle, this, &AShowcaseHUD::UpdateTimeDilation, 0.01f, true);
+	}
+}
+
+
+void AShowcaseHUD::UpdateTimeDilation()
+{
+	CurrentTimeDilation = FMath::FInterpTo(CurrentTimeDilation, TargetTimeDilation, GetWorld()->GetDeltaSeconds(), TimeDilationInterpSpeed);
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), CurrentTimeDilation);
+
+	if (FMath::IsNearlyEqual(CurrentTimeDilation, TargetTimeDilation, 0.01f))
+	{
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TargetTimeDilation);
+		GetWorld()->GetTimerManager().ClearTimer(TimeDilationTimerHandle);
 	}
 }
 
