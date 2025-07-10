@@ -106,12 +106,15 @@ void APickup::TakePickup(const AShowcaseProjectCharacter* Taker)
 				switch (AddResult.OperationResult)
 				{
 				case EItemAddResult::IAR_NoItemAdded:
+					UE_LOG(LogTemplateCharacter, Error, TEXT("Pickup %s taken by %s. No item added."), *GetNameSafe(this), *GetNameSafe(Taker));
 					break;
 				case EItemAddResult::IAR_PartialAmountItemAdded:
+					UE_LOG(LogTemplateCharacter, Warning, TEXT("Pickup %s taken by %s. Partial amount added."), *GetNameSafe(this), *GetNameSafe(Taker));
 					UpdateInteractableData();
 					Taker->UpdateInteractionWidget();
 					break;
 				case EItemAddResult::IAR_AllItemAdded:
+					UE_LOG(LogTemplateCharacter, Log, TEXT("Pickup %s taken by %s. All items added."), *GetNameSafe(this), *GetNameSafe(Taker));
 					Destroy();
 					break;
 				}

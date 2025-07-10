@@ -126,35 +126,40 @@ FItemAddResult UInventoryComponent::HandleNonStackableItem(UItemBase* ItemIn)
 
 int32 UInventoryComponent::HandleStackableItem(UItemBase* ItemIn, int32 RequestedAddAmount)
 {
-	return 1; // Placeholder for stackable item handling logic
+	
 }
 
 FItemAddResult UInventoryComponent::HandleAddItem(UItemBase* InputItem)
 {
+	UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::HandleAddItem: Attempting to add item %s to inventory."), *InputItem->GetName());
 	if (GetOwner())
 	{
 		const int32 InitialRequestedAddAmount = InputItem->Quantity;
 		//Non stackable items
 		if (!InputItem->ItemNumericData.bIsStackable)
 		{
+			UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::HandleAddItem: Item %s is non-stackable."), *InputItem->GetName());
 			return HandleNonStackableItem(InputItem);
 		}
 		//Stackable
 		const int32 StackableAmountAdded = HandleStackableItem(InputItem, InitialRequestedAddAmount);
-
+		UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::HandleAddItem: Item %s is stackable, attempting to add %d."), *InputItem->GetName(), InitialRequestedAddAmount);
 		if (StackableAmountAdded == InitialRequestedAddAmount)
 		{
+			UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::HandleAddItem: Added %d of item %s to inventory."), InitialRequestedAddAmount, *InputItem->GetName());
 			return FItemAddResult::AddedAll(InitialRequestedAddAmount, FText::Format(
 				FText::FromString("Added item {0} {1} to inventory."), InputItem->ItemTextData.Name, InitialRequestedAddAmount));			
 		}
 		if (StackableAmountAdded < InitialRequestedAddAmount && StackableAmountAdded > 0)
 		{
+			UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::HandleAddItem: Added %d of item %s to inventory, but not all requested amount."), StackableAmountAdded, *InputItem->GetName());
 			return FItemAddResult::AddedPartial(StackableAmountAdded, FText::Format(
 			FText::FromString("Partially added item {0} {1} to inventory."), InputItem->ItemTextData.Name, StackableAmountAdded
 			));
 		}
 		if (StackableAmountAdded <= 0)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("UInventoryComponent::HandleAddItem: Could not add item %s to inventory, item would overflow weight or slots capacity."), *InputItem->GetName());
 			return FItemAddResult::AddedNone(FText::Format(
 			FText::FromString("Could not add item {0} to inventory, item would overflow weight or slots capacity."), InputItem->ItemTextData.Name
 			));
@@ -174,16 +179,26 @@ void UInventoryComponent::AddNewItemToInventory(UItemBase* NewItem, int32 Amount
 		// if the item is already a copy or a pickup, we create a new instance of it
 		ItemToAdd = NewItem;
 		ItemToAdd->ResetItemFlags();
+		UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::AddNewItemToInventory: Adding existing item %s to inventory."), *ItemToAdd->GetName());
 	}
 	else
 	{
 		//used when splitting stacks or adding a new item from another source
 		ItemToAdd = NewItem->CreateItemCopy();
+		UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::AddNewItemToInventory: Creating a copy of item %s to add to inventory."), *ItemToAdd->GetName());
 	}
 	ItemToAdd->OwningInventory = this;
 	ItemToAdd->SetQuantity(AmountToAdd);
+	UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::AddNewItemToInventory: Adding %d of item %s to inventory."), AmountToAdd, *ItemToAdd->GetName());
 
 	InventoryContents.Add(ItemToAdd);
+	UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::AddNewItemToInventory: Item %s added to inventory. Current inventory size: %d."), *ItemToAdd->GetName(), InventoryContents.Num());
+	//Inventory Content
+	UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::AddNewItemToInventory: Current inventory contents:"));
+	for (const UItemBase* Item : InventoryContents)
+	{
+		UE_LOG(LogTemp, Log, TEXT(" - %s (Quantity: %d)"), *Item->GetName(), Item->Quantity);
+	}
 	InventoryTotalWeight += ItemToAdd->GetItemStackWeight();
 	OnInventoryUpdated.Broadcast();
 }

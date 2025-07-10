@@ -21,7 +21,7 @@ void UInventoryItemSlot::NativeOnInitialized()
 void UInventoryItemSlot::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	UE_LOG(LogTemp, Log, TEXT("UInventoryItemSlot::NativeConstruct: Constructing inventory item slot for item %s."), *GetNameSafe(ItemReference));
 	if (ItemReference)
 	{
 		switch (ItemReference->ItemQuality) {

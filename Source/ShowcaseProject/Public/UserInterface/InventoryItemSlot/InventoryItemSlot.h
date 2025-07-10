@@ -35,13 +35,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Inventory Slot")
 	UItemBase* ItemReference;
 	
-	UPROPERTY(VisibleAnywhere, Category="Inventory Slot")
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category="Inventory Slot")
 	UBorder* ItemBorder;
-
-	UPROPERTY(VisibleAnywhere, Category="Inventory Slot")
+	
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category="Inventory Slot")
 	UImage* ItemImage;
 
-	UPROPERTY(VisibleAnywhere, Category="Inventory Slot")
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category="Inventory Slot")
 	UTextBlock* ItemQuantity;
 	
 	virtual void NativeOnInitialized() override;
@@ -52,5 +52,4 @@ protected:
 		UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
 		UDragDropOperation* InOperation) override;
-	
 };

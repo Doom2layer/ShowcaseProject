@@ -27,7 +27,7 @@ public:
 	UWrapBox* InventoryPanel;
 	
 	UPROPERTY(meta=(BindWidget))
-	UTextBlock* WeghitInfo;
+	UTextBlock* WeightInfo;
 
 	UPROPERTY(meta=(BindWidget))
 	UTextBlock* CapacityInfo;
