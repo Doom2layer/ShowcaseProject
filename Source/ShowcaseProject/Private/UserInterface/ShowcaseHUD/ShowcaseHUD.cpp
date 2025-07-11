@@ -7,11 +7,11 @@
 #include "UserInterface/MainMenu/MainMenu.h"
 #include "UserInterface/InventoryMenu/InventoryMenu.h"
 #include "UserInterface/Interaction/InteractionWidget.h"
+#include "UserInterface/Inventory/InventoryPanel.h"
 
 
 AShowcaseHUD::AShowcaseHUD()
 {
-	
 }
 
 void AShowcaseHUD::BeginPlay()
@@ -29,14 +29,12 @@ void AShowcaseHUD::BeginPlay()
 		InventoryMenuWidget = CreateWidget<UInventoryMenu>(GetWorld(), InventoryMenuClass);
 		InventoryMenuWidget->AddToViewport(1);
 		InventoryMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
-	
 	}
 	if (InteractionWidgetClass)
 	{
 		InteractionWidget = CreateWidget<UInteractionWidget>(GetWorld(), InteractionWidgetClass);
 		InteractionWidget->AddToViewport(2);
 		InteractionWidget->SetVisibility(ESlateVisibility::Collapsed);
-	
 	}
 }
 
@@ -55,7 +53,6 @@ void AShowcaseHUD::ToggleMainMenu()
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Main Menu Collapsed"));
 			MainMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
 			const FInputModeGameOnly InputMode;
 			GetOwningPlayerController()->SetInputMode(InputMode);
@@ -92,13 +89,13 @@ void AShowcaseHUD::ToggleInventoryMenu()
 			// Instantly return to normal speed
 			TargetTimeDilation = 1.0f;
 			CurrentTimeDilation = 1.0f;
-		}
 
+			InventoryMenuWidget->WBP_InventoryPanel->CloseActiveContextMenu();
+		}
 		// Start updating time dilation each tick
 		GetWorld()->GetTimerManager().SetTimer(TimeDilationTimerHandle, this, &AShowcaseHUD::UpdateTimeDilation, 0.01f, true);
 	}
 }
-
 
 void AShowcaseHUD::UpdateTimeDilation()
 {
@@ -139,4 +136,3 @@ void AShowcaseHUD::UpdateInteractionWidget(const FInteractableData* Interactable
 		InteractionWidget->UpdateWidget(InteractableData);
 	}
 }
-

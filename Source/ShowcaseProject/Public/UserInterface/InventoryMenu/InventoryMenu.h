@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "InventoryMenu.generated.h"
 
+class UInventoryPanel;
 class AShowcaseProjectCharacter;
 /**
  * 
@@ -21,9 +22,10 @@ public:
 	UPROPERTY()
 	AShowcaseProjectCharacter* PlayerCharacter;
 
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UInventoryPanel* WBP_InventoryPanel;
+
 protected:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-		UDragDropOperation* InOperation) override;
 };

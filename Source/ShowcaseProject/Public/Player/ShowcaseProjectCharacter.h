@@ -10,6 +10,7 @@
 
 class UInventoryComponent;
 class AShowcaseHUD;
+class UItemBase;
 
 USTRUCT()
 struct FInteractionData
@@ -55,6 +56,11 @@ public:
 	FORCEINLINE UInventoryComponent* GetInventory() const { return PlayerInventory; }
 
 	void UpdateInteractionWidget() const;
+
+	void AssignPrimary(UItemBase* WeaponToAssign);
+	void AssignSecondary(UItemBase* WeaponToAssign);
+	void EquipWeapon(UItemBase* WeaponToEquip);
+	
 	
 protected:
 	//PROPERTIES
@@ -129,6 +135,7 @@ protected:
 	void Interact();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
+
 
 	
 	/** Called for movement input */

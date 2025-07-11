@@ -3,6 +3,7 @@
 
 #include "Items/ItemBase.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
+#include "Player/ShowcaseProjectCharacter.h"
 
 UItemBase::UItemBase() : bIsCopy(false), bIsPickup(false)
 {
@@ -50,4 +51,12 @@ void UItemBase::SetQuantity(const int32 NewQuantity)
 
 void UItemBase::UseItem(AShowcaseProjectCharacter* Character)
 {
+	UE_LOG(LogTemp, Log, TEXT("Using item: %s (ID: %s) - Quantity: %d"),
+	   *ItemTextData.Name.ToString(),
+	   *ItemID.ToString(),
+	   Quantity);
+
+	// Base implementation - child classes should override this
+	UE_LOG(LogTemp, Warning, TEXT("UseItem called on base ItemBase class. This should be overridden in child classes."));
+
 }

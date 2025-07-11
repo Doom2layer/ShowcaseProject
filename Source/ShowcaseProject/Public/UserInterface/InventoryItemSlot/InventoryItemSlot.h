@@ -6,12 +6,13 @@
 #include "Blueprint/UserWidget.h"
 #include "InventoryItemSlot.generated.h"
 
+class UInventoryContextMenu;
 class UInventoryTooltip;
-class UDragItemVisual;
 class UItemBase;
 class UBorder;
 class UImage;
 class UTextBlock;
+class UInventoryPanel;
 /**
  * 
  */
@@ -23,11 +24,14 @@ class SHOWCASEPROJECT_API UInventoryItemSlot : public UUserWidget
 public:
 	FORCEINLINE void SetItemReference(UItemBase* ItemIn) { ItemReference = ItemIn; }
 	FORCEINLINE UItemBase* GetItemReference() const { return ItemReference; }
-
+	FORCEINLINE void SetOwningInventoryPanel(UInventoryPanel* InventoryPanel) { OwningInventoryPanel = InventoryPanel; }
 protected:
 
+	UPROPERTY()
+	UInventoryPanel* OwningInventoryPanel;
+
 	UPROPERTY(EditDefaultsOnly, Category="Inventory Slot")
-	TSubclassOf<UDragItemVisual> DragItemVisualClass;
+	TSubclassOf<UInventoryContextMenu> ContextMenuClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Inventory Slot")
 	TSubclassOf<UInventoryTooltip> InventoryTooltipClass;
@@ -48,8 +52,4 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
-	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent,
-		UDragDropOperation*& OutOperation) override;
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-		UDragDropOperation* InOperation) override;
 };

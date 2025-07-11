@@ -29,8 +29,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Widgets")
 	TSubclassOf<UInteractionWidget> InteractionWidgetClass;
 
-	
-	
 	bool bIsInventoryMenuVisible;
 
 	bool bIsMainMenuVisible;
@@ -61,8 +59,10 @@ protected:
 	
 	UPROPERTY()
 	float CurrentTimeDilation = 1.0f;
+	
 	UPROPERTY()
 	float TargetTimeDilation = 1.0f;
+
 	UPROPERTY(EditDefaultsOnly, Category="Time Dilation")
 	float TimeDilationInterpSpeed = 3.0f;
 

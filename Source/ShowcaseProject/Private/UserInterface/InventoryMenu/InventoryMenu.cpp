@@ -16,8 +16,3 @@ void UInventoryMenu::NativeConstruct()
 	PlayerCharacter = Cast<AShowcaseProjectCharacter>(GetOwningPlayerPawn());
 }
 
-bool UInventoryMenu::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-	UDragDropOperation* InOperation)
-{
-	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
-}

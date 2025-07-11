@@ -25,6 +25,15 @@ enum class EItemType : uint8
 		Document UMETA(DisplayName = "Document"),
 };
 
+UENUM()
+enum class EWeaponCategory : uint8
+{
+	Handgun UMETA(DisplayName = "Handgun"),
+	Rifle UMETA(DisplayName = "Rifle"),
+	Shotgun UMETA(DisplayName = "Shotgun"),
+	Melee UMETA(DisplayName = "Melee")
+};
+
 USTRUCT()
 struct FItemStatistics
 {
@@ -44,6 +53,27 @@ struct FItemStatistics
 
 	UPROPERTY(EditAnywhere)
 	float Accuracy;
+
+	UPROPERTY(EditAnywhere)
+	int32 MagazineSize;
+    
+	UPROPERTY(EditAnywhere)
+	int32 MaxAmmo;
+    
+	UPROPERTY(EditAnywhere)
+	float RecoilIntensity;
+    
+	UPROPERTY(EditAnywhere)
+	float SpreadAngle;
+    
+	UPROPERTY(EditAnywhere)
+	bool bIsAutomatic;
+    
+	UPROPERTY(EditAnywhere)
+	float AimDownSightTime;
+
+	UPROPERTY(EditAnywhere)
+	bool bIsDiscardable;
 };
 
 USTRUCT()
@@ -123,4 +153,7 @@ struct FItemData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, Category="Item Data")
 	FItemAssetData ItemAssetData;
+
+	UPROPERTY(EditAnywhere , Category="Item Data")
+	EWeaponCategory WeaponCategory;
 };

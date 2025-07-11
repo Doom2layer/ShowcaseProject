@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "UserInterface/Inventory/InventoryPanel.h"
 #include "UserInterface/InventoryItemSlot/InventoryItemSlot.h"
 #include "Components/TextBlock.h"
@@ -8,6 +7,7 @@
 #include "Components/InventoryComponent/InventoryComponent.h"
 #include "Items/ItemBase.h"
 #include "Player/ShowcaseProjectCharacter.h"
+#include "UserInterface/InventoryContextMenu/InventoryContextMenu.h"
 
 void UInventoryPanel::NativeOnInitialized()
 {
@@ -43,19 +43,31 @@ void UInventoryPanel::RefreshInventory()
 	{
 		UE_LOG(LogTemp, Log, TEXT("UInventoryPanel::RefreshInventory: Refreshing inventory panel."));
 		InventoryPanel->ClearChildren();
+		CloseActiveContextMenu();
 		for (UItemBase* const& Item : InventoryReference->GetInventoryContents())
 		{
 			UE_LOG(LogTemp, Log, TEXT("UInventoryPanel::RefreshInventory: Adding item %s to inventory panel."), *Item->GetName());
 			UInventoryItemSlot* ItemSlot = CreateWidget<UInventoryItemSlot>(this, InventoryItemSlotClass);
 			ItemSlot->SetItemReference(Item);
+			ItemSlot->SetOwningInventoryPanel(this);
 			InventoryPanel->AddChildToWrapBox(ItemSlot);
 		}
 		SetInfoText();
 	}
 }
 
-bool UInventoryPanel::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-	UDragDropOperation* InOperation)
+void UInventoryPanel::CloseActiveContextMenu()
 {
-	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	if (ActiveContextMenu)
+	{
+		ActiveContextMenu->RemoveFromParent();
+		ActiveContextMenu = nullptr;
+	}
 }
+
+void UInventoryPanel::SetActiveContextMenu(UInventoryContextMenu* NewContextMenu)
+{
+	CloseActiveContextMenu();
+	ActiveContextMenu = NewContextMenu;
+}
+

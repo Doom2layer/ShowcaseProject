@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "InventoryPanel.generated.h"
 
+class UInventoryContextMenu;
 class UInventoryComponent;
 class UInventoryItemSlot;
 class AShowcaseProjectCharacter;
@@ -22,6 +23,14 @@ class SHOWCASEPROJECT_API UInventoryPanel : public UUserWidget
 public:
 	UFUNCTION()
 	void RefreshInventory();
+
+	UFUNCTION()
+	void CloseActiveContextMenu();
+
+	void SetActiveContextMenu(UInventoryContextMenu* NewContextMenu);
+
+	UPROPERTY()
+	UInventoryContextMenu* ActiveContextMenu;
 
 	UPROPERTY(meta=(BindWidget))
 	UWrapBox* InventoryPanel;
@@ -44,6 +53,4 @@ public:
 protected:
 	void SetInfoText() const;
 	virtual void NativeOnInitialized() override;
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-		UDragDropOperation* InOperation) override;
 };

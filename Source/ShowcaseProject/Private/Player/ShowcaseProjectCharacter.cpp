@@ -13,6 +13,7 @@
 #include "DrawDebugHelpers.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
+#include "Items/ItemBase.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -267,6 +268,21 @@ void AShowcaseProjectCharacter::UpdateInteractionWidget() const
 	{
 		HUD->UpdateInteractionWidget(&TargetInteractable->InteractableData);
 	}
+}
+
+void AShowcaseProjectCharacter::AssignPrimary(UItemBase* WeaponToAssign)
+{
+	UE_LOG(LogTemplateCharacter, Warning, TEXT("Assigning Primary Weapon: %s"), *WeaponToAssign->GetName());
+}
+
+void AShowcaseProjectCharacter::AssignSecondary(UItemBase* WeaponToAssign)
+{
+	UE_LOG(LogTemplateCharacter, Warning, TEXT("Assigning Secondary Weapon: %s"), *WeaponToAssign->GetName());
+}
+
+void AShowcaseProjectCharacter::EquipWeapon(UItemBase* WeaponToEquip)
+{
+	UE_LOG(LogTemplateCharacter, Warning, TEXT("Equipping Weapon: %s"), *WeaponToEquip->GetName());
 }
 
 void AShowcaseProjectCharacter::ToggleInventoryMenu() 

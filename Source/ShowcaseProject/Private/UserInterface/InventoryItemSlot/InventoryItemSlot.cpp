@@ -1,10 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "UserInterface/InventoryItemSlot/InventoryItemSlot.h"
 #include "UserInterface/InventoryTooltip/InventoryTooltip.h"
+#include  "UserInterface/InventoryContextMenu/InventoryContextMenu.h"
 #include "Components/Border.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Items/ItemBase.h"
+#include "Player/ShowcaseProjectCharacter.h"
+#include "UserInterface/Inventory/InventoryPanel.h"
 
 void UInventoryItemSlot::NativeOnInitialized()
 {
@@ -57,22 +60,32 @@ void UInventoryItemSlot::NativeConstruct()
 
 FReply UInventoryItemSlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
+	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton && ItemReference)
+	{
+		if (ContextMenuClass && OwningInventoryPanel)
+		{
+			UInventoryContextMenu* ContextMenu = CreateWidget<UInventoryContextMenu>(this, ContextMenuClass);
+			ContextMenu->ItemReference = ItemReference;
+			ContextMenu->PlayerCharacter = Cast<AShowcaseProjectCharacter>(GetOwningPlayerPawn());
+
+			//Get the absolute position of the mouse click
+			FVector2D MousePosition = InMouseEvent.GetScreenSpacePosition();
+
+			//Add to viewport at the mouse position
+			ContextMenu->AddToViewport(1000);
+
+			//Position the context menu at the mouse position
+			ContextMenu->SetPositionInViewport(MousePosition, false);
+
+			OwningInventoryPanel->SetActiveContextMenu(ContextMenu);
+		}
+		
+		return FReply::Handled();
+	}
 	return Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 }
 
 void UInventoryItemSlot::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseLeave(InMouseEvent);
-}
-
-void UInventoryItemSlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent,
-	UDragDropOperation*& OutOperation)
-{
-	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
-}
-
-bool UInventoryItemSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-	UDragDropOperation* InOperation)
-{
-	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 }
