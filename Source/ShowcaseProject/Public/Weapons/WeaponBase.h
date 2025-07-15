@@ -58,6 +58,12 @@ public:
 	FORCEINLINE UItemBase* GetWeaponItemData() const { return WeaponItemData; }
 
 	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UStaticMeshComponent *GetStaticMeshComponent() const { return StaticMeshComponent; }	
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE USkeletalMeshComponent *GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }	
+	
+	UFUNCTION(BlueprintCallable)
 	FName GetHolsterSocket() const;
 
 	// Mesh management functions
@@ -92,6 +98,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingSkeletalMesh;
+
+	
 
 	void SetupMeshComponents();
 	

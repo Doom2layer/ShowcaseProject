@@ -205,21 +205,78 @@ void UWeaponSystemComponent::HolsterWeapon(EWeaponSlot Slot)
 
 void UWeaponSystemComponent::DrawWeapon(EWeaponSlot Slot)
 {
-	AWeaponBase* WeaponInSlot = GetWeaponInSlot(Slot);
-	if (!WeaponInSlot || WeaponInSlot->GetWeaponState() != EWeaponState::Holstered) return;
+    AWeaponBase* WeaponInSlot = GetWeaponInSlot(Slot);
+    if (!WeaponInSlot || WeaponInSlot->GetWeaponState() != EWeaponState::Holstered) return;
 
-	// Holster current weapon first
-	if (CurrentEquippedWeapon)
-	{
-		EWeaponSlot CurrentSlot = GetWeaponSlotFromCategory(CurrentEquippedWeapon->GetWeaponItemData()->WeaponCategory);
-		HolsterWeapon(CurrentSlot);
-	}
+    // Draw the weapon
+    WeaponInSlot->SetWeaponState(EWeaponState::Equipped);
+    CurrentEquippedWeapon = WeaponInSlot;
+    
+    // Attach to right hand socket
+    AttachWeaponToSocket(WeaponInSlot, FName("RightHandSocket"));
+    
+    // Check if skeletal mesh component exists AND has a valid skeletal mesh assigned
+    if (WeaponInSlot->GetSkeletalMeshComponent() != nullptr && 
+        WeaponInSlot->GetSkeletalMeshComponent()->GetSkeletalMeshAsset() != nullptr)
+    {
+        // Check if the Handle socket exists on the skeletal mesh
+        if (WeaponInSlot->GetSkeletalMeshComponent()->DoesSocketExist(FName("Handle")))
+        {
+            CurrentEquippedWeapon->GetSkeletalMeshComponent()->SetRelativeLocation(
+                CurrentEquippedWeapon->GetSkeletalMeshComponent()->GetSocketTransform(
+                    FName("Handle"),
+                    ERelativeTransformSpace::RTS_Component
+                ).GetLocation() *= -1.0f
+            );
 
-	// Draw the weapon
-	WeaponInSlot->SetWeaponState(EWeaponState::Equipped);
-	CurrentEquippedWeapon = WeaponInSlot;
-	AttachWeaponToSocket(WeaponInSlot, FName("RightHandSocket"));
-	UE_LOG(LogTemp, Log, TEXT("Drew weapon: %s in slot: %s"), *WeaponInSlot->GetName(), *UEnum::GetValueAsString(Slot));
+            CurrentEquippedWeapon->GetSkeletalMeshComponent()->SetRelativeRotation(
+                CurrentEquippedWeapon->GetSkeletalMeshComponent()->GetSocketTransform(
+                    FName("Handle"),
+                    ERelativeTransformSpace::RTS_Component
+                ).GetRotation().Rotator()
+            );
+            
+            UE_LOG(LogTemp, Log, TEXT("Drew weapon using skeletal mesh: %s"), *WeaponInSlot->GetName());
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Skeletal mesh exists but no Handle socket found for weapon: %s"), *WeaponInSlot->GetName());
+        }
+    }
+    // Check if static mesh component exists AND has a valid static mesh assigned
+    else if (WeaponInSlot->GetStaticMeshComponent() != nullptr && 
+             WeaponInSlot->GetStaticMeshComponent()->GetStaticMesh() != nullptr)
+    {
+        // Check if the Handle socket exists on the static mesh
+        if (WeaponInSlot->GetStaticMeshComponent()->DoesSocketExist(FName("Handle")))
+        {
+            CurrentEquippedWeapon->GetStaticMeshComponent()->SetRelativeLocation(
+                CurrentEquippedWeapon->GetStaticMeshComponent()->GetSocketTransform(
+                    FName("Handle"),
+                    ERelativeTransformSpace::RTS_Component
+                ).GetLocation() *= -1.0f
+            );
+
+            CurrentEquippedWeapon->GetStaticMeshComponent()->SetRelativeRotation(
+                CurrentEquippedWeapon->GetStaticMeshComponent()->GetSocketTransform(
+                    FName("Handle"),
+                    ERelativeTransformSpace::RTS_Component
+                ).GetRotation().Rotator()
+            );
+            
+            UE_LOG(LogTemp, Log, TEXT("Drew weapon using static mesh: %s"), *WeaponInSlot->GetName());
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Static mesh exists but no Handle socket found for weapon: %s"), *WeaponInSlot->GetName());
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No valid mesh found for weapon: %s"), *WeaponInSlot->GetName());
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Drew weapon: %s in slot: %s"), *WeaponInSlot->GetName(), *UEnum::GetValueAsString(Slot));
 }
 
 void UWeaponSystemComponent::Fire()
@@ -389,12 +446,5 @@ EWeaponSlot UWeaponSystemComponent::GetWeaponSlotFromCategory(EWeaponCategory Ca
 		break;
 		default: return EWeaponSlot::Primary; // Invalid category
 	}
-
-
-}
-
-FName UWeaponSystemComponent::GetHolsterSocket(EWeaponSlot Slot)
-{
-	return FName("HolsterSocket"); // Default socket name, implement proper mapping later
 }
 

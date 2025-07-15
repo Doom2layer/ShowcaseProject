@@ -15,6 +15,7 @@
 #include  "Components/WeaponSystemComponent/WeaponSystemComponent.h"
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 #include "Items/ItemBase.h"
+#include "Weapons/WeaponBase.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -112,6 +113,10 @@ void AShowcaseProjectCharacter::SetupPlayerInputComponent(UInputComponent *Playe
 		EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::ToggleInventoryMenu);
 		EnhancedInputComponent->BindAction(ToggleMainMenuAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::ToggleMainMenu);
 
+		//Equip Weapons
+		EnhancedInputComponent->BindAction(EquipPrimary, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::EquipPrimaryWeapon);
+		EnhancedInputComponent->BindAction(EquipSecondary, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::EquipSecondaryWeapon);
+		
 		// Aim and Fire
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::BeginAim);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AShowcaseProjectCharacter::EndAim);
@@ -292,6 +297,70 @@ void AShowcaseProjectCharacter::BeginFire()
 void AShowcaseProjectCharacter::EndFire()
 {
 	return;
+}
+
+void AShowcaseProjectCharacter::EquipPrimaryWeapon()
+{
+	if(!WeaponSystemComponent)
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("WeaponSystemComponent is not initialized!"));
+		return;
+	}
+	// if there is no weapon in the primary slot, return
+	if (!WeaponSystemComponent->GetWeaponInSlot(EWeaponSlot::Primary))
+	{
+		UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon assigned to Primary slot!"));
+		return;
+	}
+
+	// If weapon is already equipped, Sheathe it
+	if (WeaponSystemComponent->GetEquippedWeapon() && WeaponSystemComponent->GetEquippedWeapon()->GetWeaponState() == EWeaponState::Equipped)
+	{
+		WeaponSystemComponent->HolsterWeapon(EWeaponSlot::Primary);
+		return;
+	}
+	
+	//Get the weapon from the specified slot
+	WeaponSystemComponent->DrawWeapon(EWeaponSlot::Primary);
+
+	//Get the currently equipped weapon for animation
+	AWeaponBase* CurrentWeapon = WeaponSystemComponent->GetEquippedWeapon();
+	if (CurrentWeapon)
+	{
+		UE_LOG(LogTemplateCharacter, Log, TEXT("Equipped weapon: %s"), *CurrentWeapon->GetWeaponItemData()->ItemTextData.Name.ToString());
+	}
+}
+
+void AShowcaseProjectCharacter::EquipSecondaryWeapon()
+{
+	if(!WeaponSystemComponent)
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("WeaponSystemComponent is not initialized!"));
+		return;
+	}
+	// if there is no weapon in the secondary slot, return
+	if (!WeaponSystemComponent->GetWeaponInSlot(EWeaponSlot::Secondary))
+	{
+		UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon assigned to Secondary slot!"));
+		return;
+	}
+
+	// If weapon is already equipped, Sheathe it
+	if (WeaponSystemComponent->GetEquippedWeapon() && WeaponSystemComponent->GetEquippedWeapon()->GetWeaponState() == EWeaponState::Equipped)
+	{
+		WeaponSystemComponent->HolsterWeapon(EWeaponSlot::Secondary);
+		return;
+	}
+	
+	//Get the weapon from the specified slot
+	WeaponSystemComponent->DrawWeapon(EWeaponSlot::Secondary);
+
+	//Get the currently equipped weapon for animation
+	AWeaponBase* CurrentWeapon = WeaponSystemComponent->GetEquippedWeapon();
+	if (CurrentWeapon)
+	{
+		UE_LOG(LogTemplateCharacter, Log, TEXT("Equipped weapon: %s"), *CurrentWeapon->GetWeaponItemData()->ItemTextData.Name.ToString());
+	}
 }
 
 void AShowcaseProjectCharacter::UpdateInteractionWidget() const

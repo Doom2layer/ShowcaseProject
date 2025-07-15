@@ -8,10 +8,12 @@
 #include "Logging/LogMacros.h"
 #include "ShowcaseProjectCharacter.generated.h"
 
+enum class EWeaponSlot : uint8;
 class UWeaponSystemComponent;
 class UInventoryComponent;
 class AShowcaseHUD;
 class UItemBase;
+class ABaseWeapon;
 
 
 USTRUCT()
@@ -103,7 +105,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *FireAction;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *EquipPrimary;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *EquipSecondary;
+
 	/** Target interactable object */
 	UPROPERTY(VisibleAnywhere, Category="Character | Interaction")
 	TScriptInterface<IInteractionInterface> TargetInteractable;
@@ -145,6 +153,8 @@ protected:
 	void EndAim();
 	void BeginFire();
 	void EndFire();
+	void EquipPrimaryWeapon();
+	void EquipSecondaryWeapon();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 

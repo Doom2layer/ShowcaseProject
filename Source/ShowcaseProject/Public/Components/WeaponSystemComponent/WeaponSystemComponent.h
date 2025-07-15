@@ -106,9 +106,6 @@ protected:
 
 	EWeaponSlot GetWeaponSlotFromCategory(EWeaponCategory Category);
 
-	FName GetHolsterSocket(EWeaponSlot Slot);
-
-	
 private:	
 	UPROPERTY()
 	AShowcaseProjectCharacter* OwningCharacter;

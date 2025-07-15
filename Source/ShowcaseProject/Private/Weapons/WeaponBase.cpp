@@ -106,19 +106,17 @@ void AWeaponBase::SetWeaponState(EWeaponState NewState)
 
 FName AWeaponBase::GetHolsterSocket() const
 {
-	if (!WeaponItemData) return FName("None");
-
 	switch (WeaponItemData->WeaponCategory)
 	{
 	case EWeaponCategory::Rifle:
 	case EWeaponCategory::Shotgun:
-		return FName("PrimaryHolsterSocket");
+		return FName("PrimaryHolster");
 	case EWeaponCategory::Handgun:
-		return FName("SecondaryHolsterSocket");
+		return FName("SecondaryHolster");
 	case EWeaponCategory::Melee:
-		return FName("MeleeHolsterSocket");
+		return FName("MeleeHolster");
 	default:
-		return FName("HolsterSocket");
+		return FName("None");
 	}
 }
 
