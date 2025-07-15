@@ -1,0 +1,102 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"	
+#include "GameFramework/Actor.h"
+#include "WeaponBase.generated.h"
+
+UENUM()
+enum class EWeaponState: uint8
+{
+	Unequipped UMETA(DisplayName = "Unequipped"),
+	Equipped UMETA(DisplayName = "Equipped"),
+	Holstered UMETA(DisplayName = "Holstered")
+};
+
+class UItemBase;
+
+UCLASS()
+class SHOWCASEPROJECT_API AWeaponBase : public AActor
+{
+	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	AWeaponBase();
+	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+	
+	// Initialize weapon with item data
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void InitializeWeapon(UItemBase* WeaponItem);
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void Fire();
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void Attack();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool CanFire() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool CanReload() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void Reload();
+
+	// Weapon state management
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponState(EWeaponState NewState);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE EWeaponState GetWeaponState() const { return WeaponState; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UItemBase* GetWeaponItemData() const { return WeaponItemData; }
+
+	UFUNCTION(BlueprintCallable)
+	FName GetHolsterSocket() const;
+
+	// Mesh management functions
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetWeaponMesh(UStaticMesh* StaticMesh, USkeletalMesh* SkeletalMesh = nullptr);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UPrimitiveComponent* GetActiveMeshComponent() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool IsUsingSkeletalMesh() const { return bUsingSkeletalMesh; }
+
+	
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* SkeletalMeshComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UItemBase* WeaponItemData;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EWeaponState WeaponState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bCanFire;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bUsingSkeletalMesh;
+
+	void SetupMeshComponents();
+	
+	FTimerHandle FireRateTimerHandle;
+
+	void ResetFireCooldown();
+
+};

@@ -277,6 +277,15 @@ void UInventoryComponent::AddNewItemToInventory(UItemBase* NewItem, int32 Amount
 		UE_LOG(LogTemp, Log, TEXT(" - %s (Quantity: %d)"), *Item->GetName(), Item->Quantity);
 	}
 	InventoryTotalWeight += ItemToAdd->GetItemStackWeight();
+	//Print item Weapon category 
+	if (ItemToAdd->ItemType == EItemType::Weapon)
+	{
+		UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::AddNewItemToInventory: Added weapon item %s with category %s."), *ItemToAdd->GetName(), *UEnum::GetValueAsString(ItemToAdd->WeaponCategory));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::AddNewItemToInventory: Added non-weapon item %s."), *ItemToAdd->GetName());
+	}
 	OnInventoryUpdated.Broadcast();
 }
 

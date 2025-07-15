@@ -8,9 +8,11 @@
 #include "Logging/LogMacros.h"
 #include "ShowcaseProjectCharacter.generated.h"
 
+class UWeaponSystemComponent;
 class UInventoryComponent;
 class AShowcaseHUD;
 class UItemBase;
+
 
 USTRUCT()
 struct FInteractionData
@@ -54,14 +56,10 @@ public:
 	FORCEINLINE bool IsInteracting() const { return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction);}
 
 	FORCEINLINE UInventoryComponent* GetInventory() const { return PlayerInventory; }
+	FORCEINLINE UWeaponSystemComponent* GetWeaponSystem() const { return WeaponSystemComponent; }
 
 	void UpdateInteractionWidget() const;
 
-	void AssignPrimary(UItemBase* WeaponToAssign);
-	void AssignSecondary(UItemBase* WeaponToAssign);
-	void EquipWeapon(UItemBase* WeaponToEquip);
-	
-	
 protected:
 	//PROPERTIES
 	/** Camera boom positioning the camera behind the character */
@@ -95,9 +93,16 @@ protected:
 	/** Menu and Inventory Input Actions */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *ToggleInventoryAction;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *ToggleMainMenuAction;
+
+	/** Aim and Fire Input Actions */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *AimAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *FireAction;
 	
 	/** Target interactable object */
 	UPROPERTY(VisibleAnywhere, Category="Character | Interaction")
@@ -123,6 +128,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Character | Inventory")
 	UInventoryComponent* PlayerInventory;
 
+	/** Inventory component */
+	UPROPERTY(VisibleAnywhere, Category="Character | Weapon")
+	UWeaponSystemComponent* WeaponSystemComponent;
 	
 	//Functions
 	void ToggleInventoryMenu();
@@ -133,6 +141,10 @@ protected:
 	void BeginInteract();
 	void EndInteract();
 	void Interact();
+	void BeginAim();
+	void EndAim();
+	void BeginFire();
+	void EndFire();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 

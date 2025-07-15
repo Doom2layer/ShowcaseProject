@@ -20,6 +20,7 @@ UItemBase* UItemBase::CreateItemCopy() const
 	UItemBase* ItemCopy = NewObject<UItemBase>(StaticClass());
 
 	ItemCopy->ItemID = this->ItemID;
+	ItemCopy->WeaponCategory = this->WeaponCategory;
 	ItemCopy->Quantity = this->Quantity;
 	ItemCopy->ItemType = this->ItemType;
 	ItemCopy->ItemQuality = this->ItemQuality;

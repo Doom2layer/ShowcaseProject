@@ -121,6 +121,9 @@ struct FItemAssetData
 	UStaticMesh* Mesh;
 
 	UPROPERTY(EditAnywhere)
+	USkeletalMesh* SkeletalMesh;
+
+	UPROPERTY(EditAnywhere)
 	USoundBase* PickupSound;
 
 	UPROPERTY(EditAnywhere)
@@ -134,7 +137,10 @@ struct FItemData : public FTableRowBase
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, Category="Item Data")
-	FName ItemID;	
+	FName ItemID;
+
+	UPROPERTY(EditAnywhere , Category="Item Data")
+	EWeaponCategory WeaponCategory;
 
 	UPROPERTY(EditAnywhere, Category="Item Data")
 	EItemType ItemType;
@@ -154,6 +160,4 @@ struct FItemData : public FTableRowBase
 	UPROPERTY(EditAnywhere, Category="Item Data")
 	FItemAssetData ItemAssetData;
 
-	UPROPERTY(EditAnywhere , Category="Item Data")
-	EWeaponCategory WeaponCategory;
 };

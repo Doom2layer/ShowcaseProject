@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "DrawDebugHelpers.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
+#include  "Components/WeaponSystemComponent/WeaponSystemComponent.h"
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 #include "Items/ItemBase.h"
 
@@ -65,6 +66,8 @@ AShowcaseProjectCharacter::AShowcaseProjectCharacter()
 	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Player Inventory"));
 	PlayerInventory->SetSlotsCapacity(20);
 	PlayerInventory->SetWeightCapacity(100.0f); // Set the weight capacity of the inventory
+
+	WeaponSystemComponent = CreateDefaultSubobject<UWeaponSystemComponent>(TEXT("Weapon System Component"));
 }
 
 
@@ -108,6 +111,14 @@ void AShowcaseProjectCharacter::SetupPlayerInputComponent(UInputComponent *Playe
 		//Menu and Inventory
 		EnhancedInputComponent->BindAction(ToggleInventoryAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::ToggleInventoryMenu);
 		EnhancedInputComponent->BindAction(ToggleMainMenuAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::ToggleMainMenu);
+
+		// Aim and Fire
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::BeginAim);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AShowcaseProjectCharacter::EndAim);
+
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::BeginFire);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AShowcaseProjectCharacter::EndFire);
+		
 	}
 	else
 	{
@@ -262,27 +273,33 @@ void AShowcaseProjectCharacter::Interact()
 	}
 }
 
+void AShowcaseProjectCharacter::BeginAim()
+{
+	return;
+}
+
+
+void AShowcaseProjectCharacter::EndAim()
+{
+	return;
+}
+
+void AShowcaseProjectCharacter::BeginFire()
+{
+	return;
+}
+
+void AShowcaseProjectCharacter::EndFire()
+{
+	return;
+}
+
 void AShowcaseProjectCharacter::UpdateInteractionWidget() const
 {
 	if (IsValid(TargetInteractable.GetObject()))
 	{
 		HUD->UpdateInteractionWidget(&TargetInteractable->InteractableData);
 	}
-}
-
-void AShowcaseProjectCharacter::AssignPrimary(UItemBase* WeaponToAssign)
-{
-	UE_LOG(LogTemplateCharacter, Warning, TEXT("Assigning Primary Weapon: %s"), *WeaponToAssign->GetName());
-}
-
-void AShowcaseProjectCharacter::AssignSecondary(UItemBase* WeaponToAssign)
-{
-	UE_LOG(LogTemplateCharacter, Warning, TEXT("Assigning Secondary Weapon: %s"), *WeaponToAssign->GetName());
-}
-
-void AShowcaseProjectCharacter::EquipWeapon(UItemBase* WeaponToEquip)
-{
-	UE_LOG(LogTemplateCharacter, Warning, TEXT("Equipping Weapon: %s"), *WeaponToEquip->GetName());
 }
 
 void AShowcaseProjectCharacter::ToggleInventoryMenu() 

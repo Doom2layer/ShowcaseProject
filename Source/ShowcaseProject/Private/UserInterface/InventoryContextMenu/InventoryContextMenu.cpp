@@ -4,6 +4,7 @@
 #include "UserInterface/InventoryContextMenu/InventoryContextMenu.h"
 #include "Components/Button.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
+#include "Components/WeaponSystemComponent/WeaponSystemComponent.h"
 #include "Items/ItemBase.h"
 #include "Player/ShowcaseProjectCharacter.h"
 
@@ -27,6 +28,10 @@ void UInventoryContextMenu::NativeConstruct()
 	{
 		AssignSecondaryButton->OnClicked.AddDynamic(this, &UInventoryContextMenu::OnAssignSecondaryButtonClicked);
 	}
+	if (AssignMeleeButton)
+	{
+		AssignMeleeButton->OnClicked.AddDynamic(this, &UInventoryContextMenu::OnAssignMeleeButtonClicked);
+	}
 	if (ExamineButton)
 	{
 		ExamineButton->OnClicked.AddDynamic(this, &UInventoryContextMenu::OnExamineButtonClicked);
@@ -39,63 +44,121 @@ void UInventoryContextMenu::NativeConstruct()
 	{
 		CombineButton->OnClicked.AddDynamic(this, &UInventoryContextMenu::OnCombineButtonClicked);
 	}
-
 	SetupButtonsForItemType();
 }
 
-void UInventoryContextMenu::SetupButtonsForItemType()
+void UInventoryContextMenu::SetupButtonsForItemType() const
 {
-	if (!ItemReference)
+    if (!ItemReference)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemReference is null! Cannot setup buttons"));
+        return;
+    }
+
+    // Hide all buttons by default
+    EquipButton->SetVisibility(ESlateVisibility::Collapsed);
+    AssignPrimaryButton->SetVisibility(ESlateVisibility::Collapsed);
+    AssignSecondaryButton->SetVisibility(ESlateVisibility::Collapsed);
+    AssignMeleeButton->SetVisibility(ESlateVisibility::Collapsed);
+    UseButton->SetVisibility(ESlateVisibility::Collapsed);
+    DiscardButton->SetVisibility(ESlateVisibility::Collapsed);
+    ExamineButton->SetVisibility(ESlateVisibility::Collapsed);
+    CombineButton->SetVisibility(ESlateVisibility::Collapsed);
+
+    // Show buttons based on item type
+    switch (ItemReference->ItemType)
+    {
+    case EItemType::Melee:
+    case EItemType::Weapon:
+        // Access WeaponCategory directly since it's a property of ItemBase
+        switch (ItemReference->WeaponCategory)
+        {
+        case EWeaponCategory::Rifle:
+        case EWeaponCategory::Shotgun:
+            AssignPrimaryButton->SetVisibility(ESlateVisibility::Visible);
+            EquipButton->SetVisibility(ESlateVisibility::Visible);
+            break;
+        case EWeaponCategory::Handgun:
+            EquipButton->SetVisibility(ESlateVisibility::Visible);
+            AssignSecondaryButton->SetVisibility(ESlateVisibility::Visible);
+            break;
+        case EWeaponCategory::Melee:
+            EquipButton->SetVisibility(ESlateVisibility::Visible);
+            AssignMeleeButton->SetVisibility(ESlateVisibility::Visible);
+            break;
+        }
+        break;
+    case EItemType::Ammo:
+        break;
+    case EItemType::Health:
+        UseButton->SetVisibility(ESlateVisibility::Visible);
+        ExamineButton->SetVisibility(ESlateVisibility::Visible);
+        break;
+    case EItemType::Key:
+        UseButton->SetVisibility(ESlateVisibility::Visible);
+        break;
+    case EItemType::Document:
+        ExamineButton->SetVisibility(ESlateVisibility::Visible);
+        break;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("UInventoryContextMenu::SetupButtonsForItemType: ItemType: %s, WeaponCategory: %s"),
+        *UEnum::GetValueAsString(ItemReference->ItemType),
+        *UEnum::GetValueAsString(ItemReference->WeaponCategory));
+
+    // Show discard button if item is discardable
+    DiscardButton->SetVisibility(ItemReference->ItemStatistics.bIsDiscardable ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
+}
+
+void UInventoryContextMenu::OnAssignMeleeButtonClicked()
+{
+	if (PlayerCharacter && ItemReference)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UInventoryContextMenu::OnUseButtonClicked: ItemReference is null! Cannot use item."));
-		return;
+		UWeaponSystemComponent* WeaponSystem = PlayerCharacter->GetWeaponSystem();
+		if (WeaponSystem)
+		{
+			if (WeaponSystem->AssignWeaponToMeleeSlot(ItemReference))
+			{
+				UE_LOG(LogTemp, Log, TEXT("Successfully assigned item %s to melee slot"), *ItemReference->GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to assign item %s to melee slot"), *ItemReference->GetName());
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("WeaponSystem is null! Cannot assign melee item"));
+		}
+		RemoveFromParent();
 	}
-
-	//Hide all buttons by default
-	EquipButton->SetVisibility(ESlateVisibility::Collapsed);
-	AssignPrimaryButton->SetVisibility(ESlateVisibility::Collapsed);
-	AssignSecondaryButton->SetVisibility(ESlateVisibility::Collapsed);
-	UseButton->SetVisibility(ESlateVisibility::Collapsed);
-	DiscardButton->SetVisibility(ESlateVisibility::Collapsed);
-	ExamineButton->SetVisibility(ESlateVisibility::Collapsed);
-	CombineButton->SetVisibility(ESlateVisibility::Collapsed);
-
-	UE_LOG(LogTemp, Warning, TEXT("UInventoryContextMenu::SetupButtonsForItemType: Setting up buttons for item type: %s"), *UEnum::GetValueAsString(ItemReference->ItemType));
-	//Show buttons based on item type
-	switch (ItemReference->ItemType)
+	else
 	{
-	case EItemType::Weapon:
-		ExamineButton->SetVisibility(ESlateVisibility::Visible);
-		EquipButton->SetVisibility(ESlateVisibility::Visible);
-		AssignPrimaryButton->SetVisibility(ESlateVisibility::Visible);
-		AssignSecondaryButton->SetVisibility(ESlateVisibility::Visible);
-		break;
-	case EItemType::Melee:
-		EquipButton->SetVisibility(ESlateVisibility::Visible);
-		break;
-	case EItemType::Ammo:
-		break;
-	case EItemType::Health:
-		UseButton->SetVisibility(ESlateVisibility::Visible);
-		ExamineButton->SetVisibility(ESlateVisibility::Visible);
-		break;
-	case EItemType::Key:
-		UseButton->SetVisibility(ESlateVisibility::Visible);
-		break;
-	case EItemType::Document:
-		ExamineButton->SetVisibility(ESlateVisibility::Visible);
-		break;
+		UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter or ItemReference is null! Cannot assign melee item"));
 	}
-	//Show discard button if item is discardable
-	DiscardButton->SetVisibility(ItemReference->ItemStatistics.bIsDiscardable ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
-
 }
 
 void UInventoryContextMenu::OnEquipButtonClicked()
 {
 	if (PlayerCharacter && ItemReference)
 	{
-		PlayerCharacter->EquipWeapon(ItemReference);
+		UWeaponSystemComponent* WeaponSystem = PlayerCharacter->GetWeaponSystem();
+		if (WeaponSystem)
+		{
+			if (WeaponSystem->EquipWeapon(ItemReference))
+			{
+				UE_LOG(LogTemp, Log, TEXT("UInventoryContextMenu::OnEquipButtonClicked: Successfully equipped item %s."), *ItemReference->GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UInventoryContextMenu::OnEquipButtonClicked: Failed to equip item %s."), *ItemReference->GetName());
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UInventoryContextMenu::OnEquipButtonClicked: WeaponSystem is null! Cannot equip item."));
+		}
+		
 		RemoveFromParent();
 	}
 	else
@@ -117,7 +180,18 @@ void UInventoryContextMenu::OnAssignPrimaryButtonClicked()
 {
 	if (PlayerCharacter && ItemReference)
 	{
-		PlayerCharacter->AssignPrimary(ItemReference);
+		UWeaponSystemComponent* WeaponSystem = PlayerCharacter->GetWeaponSystem();
+		if (WeaponSystem)
+		{
+            if (WeaponSystem->AssignWeaponToPrimarySlot(ItemReference))
+			{
+				UE_LOG(LogTemp, Log, TEXT("UInventoryContextMenu::OnAssignPrimaryButtonClicked: Successfully assigned item %s to primary slot."), *ItemReference->GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UInventoryContextMenu::OnAssignPrimaryButtonClicked: Failed to assign item %s to primary slot."), *ItemReference->GetName());
+			}
+		}
 		RemoveFromParent();
 	}
 	else
@@ -130,8 +204,22 @@ void UInventoryContextMenu::OnAssignSecondaryButtonClicked()
 {
 	if (PlayerCharacter && ItemReference)
 	{
-		
-		PlayerCharacter->AssignSecondary(ItemReference);
+		UWeaponSystemComponent* WeaponSystem = PlayerCharacter->GetWeaponSystem();
+		if (WeaponSystem)
+		{
+            if (WeaponSystem->AssignWeaponToSecondarySlot(ItemReference))
+			{
+				UE_LOG(LogTemp, Log, TEXT("UInventoryContextMenu::OnAssignSecondaryButtonClicked: Successfully assigned item %s to secondary slot."), *ItemReference->GetName());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("UInventoryContextMenu::OnAssignSecondaryButtonClicked: Failed to assign item %s to secondary slot."), *ItemReference->GetName());
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UInventoryContextMenu::OnAssignSecondaryButtonClicked: WeaponSystem is null! Cannot assign secondary item."));
+		}
 		RemoveFromParent();
 	}
 	else

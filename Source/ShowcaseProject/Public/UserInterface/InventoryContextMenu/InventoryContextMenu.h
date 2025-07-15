@@ -25,6 +25,8 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	UButton* AssignSecondaryButton;
 	UPROPERTY(meta=(BindWidget))
+	UButton* AssignMeleeButton;
+	UPROPERTY(meta=(BindWidget))
 	UButton* EquipButton;
 	UPROPERTY(meta=(BindWidget))
 	UButton* ExamineButton;
@@ -32,7 +34,6 @@ public:
 	UButton* DiscardButton;
 	UPROPERTY(meta=(BindWidget))
 	UButton* CombineButton;
-
 	UPROPERTY(BlueprintReadWrite)
 	UItemBase* ItemReference;
 
@@ -50,6 +51,8 @@ private:
 	UFUNCTION()
 	void OnAssignSecondaryButtonClicked();
 	UFUNCTION()
+	void OnAssignMeleeButtonClicked();
+	UFUNCTION()
 	void OnExamineButtonClicked();
 	UFUNCTION()
 	void OnDiscardButtonClicked();
@@ -57,5 +60,5 @@ private:
 	void OnCombineButtonClicked();
 	UFUNCTION()
 	void OnEquipButtonClicked();
-	void SetupButtonsForItemType();
+	void SetupButtonsForItemType() const;
 };

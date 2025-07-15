@@ -29,6 +29,9 @@ public:
 	FName ItemID;	
 
 	UPROPERTY(VisibleAnywhere, Category="Item")
+	EWeaponCategory WeaponCategory;
+	
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	EItemType ItemType;
 
 	UPROPERTY(VisibleAnywhere, Category="Item")
@@ -45,7 +48,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	FItemAssetData ItemAssetData;
-
+	
 	bool bIsCopy;
 	bool bIsPickup;
 
@@ -55,7 +58,7 @@ public:
 	void ResetItemFlags();
 	
 	UFUNCTION(Category= "Item")
-	UItemBase* CreateItemCopy() const;
+	virtual UItemBase* CreateItemCopy() const;
 	
 	UFUNCTION(Category= "Item")
 	FORCEINLINE float GetItemStackWeight() const {return Quantity * ItemNumericData.Weight;};
@@ -71,6 +74,8 @@ public:
 	
 	UFUNCTION(Category= "Item")
 	virtual void UseItem(AShowcaseProjectCharacter *Character);
+
+	
 	
 protected:
 	bool operator==(const FName& OtherID) const{ return this->ItemID == OtherID;  };
