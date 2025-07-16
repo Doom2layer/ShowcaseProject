@@ -22,6 +22,139 @@ UWeaponSystemComponent::UWeaponSystemComponent()
 	// ...
 }
 
+void UWeaponSystemComponent::DrawWeaponWithAnimation(EWeaponSlot Slot)
+{
+	AWeaponBase* WeaponInSlot = GetWeaponInSlot(Slot);
+	if (!WeaponInSlot || WeaponInSlot->GetWeaponState() != EWeaponState::Holstered) return;
+
+	// If another weapon is currently equipped, we need to holster it first
+	if (CurrentEquippedWeapon && CurrentEquippedWeapon != WeaponInSlot)
+	{
+		EWeaponSlot CurrentSlot = GetSlotForWeapon(CurrentEquippedWeapon);
+		PendingWeaponSlot = Slot; // Store which weapon we want to equip next
+		bHasPendingWeaponSwitch = true;
+        
+		HolsterWeaponWithAnimation(CurrentSlot);
+		return;
+	}
+
+	UAnimMontage* EquipMontage = GetEquipMontageForSlot(Slot);
+	if (EquipMontage)
+	{
+		PlayWeaponMontage(EquipMontage);
+		UE_LOG(LogTemp, Log, TEXT("Starting equip animation for slot: %s"), *UEnum::GetValueAsString(Slot));
+	}
+	else
+	{
+		// Fallback to instant equip if no montage is assigned
+		DrawWeapon(Slot);
+	}
+}
+
+void UWeaponSystemComponent::HolsterWeaponWithAnimation(EWeaponSlot Slot)
+{
+	AWeaponBase* WeaponInSlot = GetWeaponInSlot(Slot);
+	if (!WeaponInSlot || WeaponInSlot->GetWeaponState() != EWeaponState::Equipped) return;
+
+	UAnimMontage* HolsterMontage = GetHolsterMontageForSlot(Slot);
+	if (HolsterMontage)
+	{
+		PlayWeaponMontage(HolsterMontage);
+		UE_LOG(LogTemp, Log, TEXT("Starting holster animation for slot: %s"), *UEnum::GetValueAsString(Slot));
+	}
+	else
+	{
+		// Fallback to instant holster if no montage is assigned
+		HolsterWeapon(Slot);
+	}
+}
+
+void UWeaponSystemComponent::OnEquipAnimationComplete(EWeaponSlot Slot)
+{
+	UE_LOG(LogTemp, Log, TEXT("Equip animation complete for slot: %s"), *UEnum::GetValueAsString(Slot));
+	DrawWeapon(Slot);
+
+}
+
+void UWeaponSystemComponent::OnHolsterAnimationComplete(EWeaponSlot Slot)
+{
+	UE_LOG(LogTemp, Log, TEXT("Holster animation complete for slot: %s"), *UEnum::GetValueAsString(Slot));
+	HolsterWeapon(Slot);
+    
+	// Check if we have a pending weapon switch
+	if (bHasPendingWeaponSwitch)
+	{
+		bHasPendingWeaponSwitch = false;
+        
+		// Now equip the pending weapon
+		UAnimMontage* EquipMontage = GetEquipMontageForSlot(PendingWeaponSlot);
+		if (EquipMontage)
+		{
+			PlayWeaponMontage(EquipMontage);
+			UE_LOG(LogTemp, Log, TEXT("Starting pending equip animation for slot: %s"), *UEnum::GetValueAsString(PendingWeaponSlot));
+		}
+		else
+		{
+			// Fallback to instant equip if no montage is assigned
+			DrawWeapon(PendingWeaponSlot);
+		}
+	}
+}
+
+EWeaponSlot UWeaponSystemComponent::GetSlotForWeapon(AWeaponBase* Weapon)
+{
+	if (!Weapon) return EWeaponSlot::Primary;
+    
+	if (Weapon == PrimaryWeapon) return EWeaponSlot::Primary;
+	if (Weapon == SecondaryWeapon) return EWeaponSlot::Secondary;
+	if (Weapon == MeleeWeapon) return EWeaponSlot::Melee;
+    
+	return EWeaponSlot::Primary; // fallback
+
+}
+
+UAnimMontage* UWeaponSystemComponent::GetEquipMontageForSlot(EWeaponSlot Slot)
+{
+	switch (Slot)
+	{
+	case EWeaponSlot::Primary:
+		return EquipPrimaryMontage;
+	case EWeaponSlot::Secondary:
+		return EquipSecondaryMontage;
+	case EWeaponSlot::Melee:
+		return EquipMeleeMontage;
+	default:
+		return nullptr;
+	}
+}
+
+UAnimMontage* UWeaponSystemComponent::GetHolsterMontageForSlot(EWeaponSlot Slot)
+{
+	switch (Slot)
+	{
+	case EWeaponSlot::Primary:
+		return HolsterPrimaryMontage;
+	case EWeaponSlot::Secondary:
+		return HolsterSecondaryMontage;
+	case EWeaponSlot::Melee:
+		return HolsterMeleeMontage;
+	default:
+		return nullptr;
+	}
+}
+
+void UWeaponSystemComponent::PlayWeaponMontage(UAnimMontage* Montage)
+{
+	
+	if (!Montage || !OwningCharacter) return;
+
+	UAnimInstance* AnimInstance = OwningCharacter->GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(Montage);
+		UE_LOG(LogTemp, Log, TEXT("Playing weapon montage: %s"), *Montage->GetName());
+	}
+}
 
 // Called when the game starts
 void UWeaponSystemComponent::BeginPlay()
@@ -327,13 +460,10 @@ AWeaponBase* UWeaponSystemComponent::GetWeaponInSlot(EWeaponSlot Slot) const
 	switch (Slot) {
 	case EWeaponSlot::Primary:
 		return PrimaryWeapon;
-		break;
 	case EWeaponSlot::Secondary:
 		return SecondaryWeapon;
-		break;
 	case EWeaponSlot::Melee:
 		return MeleeWeapon;
-		break;
 	default: 
 		return nullptr; // Invalid slot
 	}
@@ -447,4 +577,3 @@ EWeaponSlot UWeaponSystemComponent::GetWeaponSlotFromCategory(EWeaponCategory Ca
 		default: return EWeaponSlot::Primary; // Invalid category
 	}
 }
-

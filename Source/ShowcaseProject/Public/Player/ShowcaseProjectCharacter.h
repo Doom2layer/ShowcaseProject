@@ -60,6 +60,7 @@ public:
 	FORCEINLINE UInventoryComponent* GetInventory() const { return PlayerInventory; }
 	FORCEINLINE UWeaponSystemComponent* GetWeaponSystem() const { return WeaponSystemComponent; }
 
+	FORCEINLINE bool IsPlayingAnimation() const { return bIsPlayingAnimation; }
 	void UpdateInteractionWidget() const;
 
 protected:
@@ -120,6 +121,15 @@ protected:
 	UPROPERTY()
 	AShowcaseHUD* HUD;
 
+	UPROPERTY()
+	class UShowcaseAnimInstance* AnimInstance;
+
+	UPROPERTY()
+	bool bIsPlayingAnimation = false;
+
+	UPROPERTY()
+	FTimerHandle AnimationTimerHandle;
+
 	/** Frequency at which the character checks for interactable objects */
 	float InteractionCheckFrequency;
 
@@ -137,7 +147,7 @@ protected:
 	UInventoryComponent* PlayerInventory;
 
 	/** Inventory component */
-	UPROPERTY(VisibleAnywhere, Category="Character | Weapon")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character | Weapon")
 	UWeaponSystemComponent* WeaponSystemComponent;
 	
 	//Functions

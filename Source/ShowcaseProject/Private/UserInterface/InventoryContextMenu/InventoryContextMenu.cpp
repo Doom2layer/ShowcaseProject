@@ -204,8 +204,7 @@ void UInventoryContextMenu::OnAssignSecondaryButtonClicked()
 {
 	if (PlayerCharacter && ItemReference)
 	{
-		UWeaponSystemComponent* WeaponSystem = PlayerCharacter->GetWeaponSystem();
-		if (WeaponSystem)
+		if (UWeaponSystemComponent* WeaponSystem = PlayerCharacter->GetWeaponSystem())
 		{
             if (WeaponSystem->AssignWeaponToSecondarySlot(ItemReference))
 			{

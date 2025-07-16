@@ -10,6 +10,7 @@
 class AShowcaseProjectCharacter;
 class AWeaponBase;
 class UItemBase;
+class UAnimMontage;
 
 UENUM(BlueprintType)
 enum class EWeaponSlot : uint8
@@ -73,6 +74,39 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="Weapon System")
 	AWeaponBase* GetWeaponInSlot(EWeaponSlot Slot) const;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon System|Animation")
+	UAnimMontage* EquipPrimaryMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon System|Animation")
+	UAnimMontage* HolsterPrimaryMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon System|Animation")
+	UAnimMontage* EquipSecondaryMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon System|Animation")
+	UAnimMontage* HolsterSecondaryMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon System|Animation")
+	UAnimMontage* EquipMeleeMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon System|Animation")
+	UAnimMontage* HolsterMeleeMontage;
+
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	void DrawWeaponWithAnimation(EWeaponSlot Slot);
+
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	void HolsterWeaponWithAnimation(EWeaponSlot Slot);
+
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	void OnEquipAnimationComplete(EWeaponSlot Slot);
+
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	void OnHolsterAnimationComplete(EWeaponSlot Slot);
+
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	EWeaponSlot GetSlotForWeapon(AWeaponBase* Weapon);
 
 
 protected:
@@ -109,5 +143,10 @@ protected:
 private:	
 	UPROPERTY()
 	AShowcaseProjectCharacter* OwningCharacter;
-		
+	EWeaponSlot PendingWeaponSlot = EWeaponSlot::Primary;
+	
+	UAnimMontage* GetEquipMontageForSlot(EWeaponSlot Slot);
+	UAnimMontage* GetHolsterMontageForSlot(EWeaponSlot Slot);
+	void PlayWeaponMontage(UAnimMontage* Montage);
+	bool bHasPendingWeaponSwitch = false;
 };

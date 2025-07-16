@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "DrawDebugHelpers.h"
+#include "Animation/ShowcaseAnimInstance.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
 #include  "Components/WeaponSystemComponent/WeaponSystemComponent.h"
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
@@ -68,7 +69,7 @@ AShowcaseProjectCharacter::AShowcaseProjectCharacter()
 	PlayerInventory->SetSlotsCapacity(20);
 	PlayerInventory->SetWeightCapacity(100.0f); // Set the weight capacity of the inventory
 
-	WeaponSystemComponent = CreateDefaultSubobject<UWeaponSystemComponent>(TEXT("Weapon System Component"));
+	WeaponSystemComponent = CreateDefaultSubobject<UWeaponSystemComponent>(TEXT("WeaponSystemComponent_New"));
 }
 
 
@@ -144,7 +145,7 @@ void AShowcaseProjectCharacter::Tick(float DeltaSeconds)
 void AShowcaseProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	AnimInstance = Cast<UShowcaseAnimInstance>(GetMesh()->GetAnimInstance());
 	HUD = Cast<AShowcaseHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 }
 
@@ -301,66 +302,46 @@ void AShowcaseProjectCharacter::EndFire()
 
 void AShowcaseProjectCharacter::EquipPrimaryWeapon()
 {
-	if(!WeaponSystemComponent)
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("WeaponSystemComponent is not initialized!"));
-		return;
-	}
-	// if there is no weapon in the primary slot, return
+	if(!WeaponSystemComponent) return;
+
 	if (!WeaponSystemComponent->GetWeaponInSlot(EWeaponSlot::Primary))
 	{
 		UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon assigned to Primary slot!"));
 		return;
 	}
 
-	// If weapon is already equipped, Sheathe it
-	if (WeaponSystemComponent->GetEquippedWeapon() && WeaponSystemComponent->GetEquippedWeapon()->GetWeaponState() == EWeaponState::Equipped)
+	AWeaponBase* PrimaryWeapon = WeaponSystemComponent->GetWeaponInSlot(EWeaponSlot::Primary);
+	if (WeaponSystemComponent->GetEquippedWeapon() == PrimaryWeapon)
 	{
-		WeaponSystemComponent->HolsterWeapon(EWeaponSlot::Primary);
+		// If primary weapon is already equipped, holster it
+		WeaponSystemComponent->HolsterWeaponWithAnimation(EWeaponSlot::Primary);
 		return;
 	}
-	
-	//Get the weapon from the specified slot
-	WeaponSystemComponent->DrawWeapon(EWeaponSlot::Primary);
 
-	//Get the currently equipped weapon for animation
-	AWeaponBase* CurrentWeapon = WeaponSystemComponent->GetEquippedWeapon();
-	if (CurrentWeapon)
-	{
-		UE_LOG(LogTemplateCharacter, Log, TEXT("Equipped weapon: %s"), *CurrentWeapon->GetWeaponItemData()->ItemTextData.Name.ToString());
-	}
+	// Draw the weapon (the component will handle holstering current weapon if needed)
+	WeaponSystemComponent->DrawWeaponWithAnimation(EWeaponSlot::Primary);
 }
 
 void AShowcaseProjectCharacter::EquipSecondaryWeapon()
 {
-	if(!WeaponSystemComponent)
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("WeaponSystemComponent is not initialized!"));
-		return;
-	}
-	// if there is no weapon in the secondary slot, return
+	if(!WeaponSystemComponent) return;
+
 	if (!WeaponSystemComponent->GetWeaponInSlot(EWeaponSlot::Secondary))
 	{
 		UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon assigned to Secondary slot!"));
 		return;
 	}
 
-	// If weapon is already equipped, Sheathe it
-	if (WeaponSystemComponent->GetEquippedWeapon() && WeaponSystemComponent->GetEquippedWeapon()->GetWeaponState() == EWeaponState::Equipped)
+	AWeaponBase* SecondaryWeapon = WeaponSystemComponent->GetWeaponInSlot(EWeaponSlot::Secondary);
+	if (WeaponSystemComponent->GetEquippedWeapon() == SecondaryWeapon)
 	{
-		WeaponSystemComponent->HolsterWeapon(EWeaponSlot::Secondary);
+		// If secondary weapon is already equipped, holster it
+		WeaponSystemComponent->HolsterWeaponWithAnimation(EWeaponSlot::Secondary);
 		return;
 	}
-	
-	//Get the weapon from the specified slot
-	WeaponSystemComponent->DrawWeapon(EWeaponSlot::Secondary);
 
-	//Get the currently equipped weapon for animation
-	AWeaponBase* CurrentWeapon = WeaponSystemComponent->GetEquippedWeapon();
-	if (CurrentWeapon)
-	{
-		UE_LOG(LogTemplateCharacter, Log, TEXT("Equipped weapon: %s"), *CurrentWeapon->GetWeaponItemData()->ItemTextData.Name.ToString());
-	}
+	// Draw the weapon (the component will handle holstering current weapon if needed)
+	WeaponSystemComponent->DrawWeaponWithAnimation(EWeaponSlot::Secondary);
 }
 
 void AShowcaseProjectCharacter::UpdateInteractionWidget() const
@@ -417,4 +398,3 @@ void AShowcaseProjectCharacter::Look(const FInputActionValue &Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
-
