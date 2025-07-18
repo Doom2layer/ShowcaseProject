@@ -4,6 +4,7 @@
 #include "Weapons/WeaponBase.h"
 #include "Player/ShowcaseProjectCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
 
 // Sets default values
@@ -197,7 +198,7 @@ void AWeaponBase::PlayGunEffects()
 	}
 
 	//Play muzzle flash effect
-	if (WeaponItemData->WeaponData.MuzzleFlash)
+	if (WeaponItemData->WeaponData.FireEffectMuzzle)
 	{
 		UPrimitiveComponent* MeshComp = GetActiveMeshComponent();
 		if (MeshComp)
@@ -225,9 +226,9 @@ void AWeaponBase::PlayGunEffects()
 				MuzzleLocation = MeshComp->GetComponentLocation() + MeshComp->GetForwardVector() * 100.0f; // Adjust offset as needed
 				MuzzleRotation = MeshComp->GetComponentRotation();
 			}
-			UGameplayStatics::SpawnEmitterAtLocation(
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 				GetWorld(),
-				WeaponItemData->WeaponData.MuzzleFlash,
+				WeaponItemData->WeaponData.FireEffectMuzzle,
 				MuzzleLocation,
 				MuzzleRotation
 			);
@@ -289,38 +290,52 @@ void AWeaponBase::FireBullet()
     }
 
     // Check if this is a shotgun (uses pellets)
-	if (WeaponItemData->WeaponCategory == EWeaponCategory::Shotgun && WeaponItemData->WeaponData.ShotgunPelletCount > 1)
-	{
-		for (int32 i = 0; i < WeaponItemData->WeaponData.ShotgunPelletCount; i++)
-		{
-			// Calculate spread for each pellet
-			float RandomPitch = FMath::FRandRange(-WeaponItemData->WeaponData.SpreadAngle, WeaponItemData->WeaponData.SpreadAngle);
-			float RandomYaw = FMath::FRandRange(-WeaponItemData->WeaponData.SpreadAngle, WeaponItemData->WeaponData.SpreadAngle);
-            
-			// Create pellet rotation with spread
-			FRotator PelletRotation = SpawnRotation + FRotator(RandomPitch, RandomYaw, 0.0f);
-            
-			if (WeaponItemData->WeaponData.ProjectileClass)
-			{
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.Owner = GetOwner();
-				SpawnParams.Instigator = Cast<APawn>(GetOwner());
-                
-				// Spawn pellet with the spread rotation
-				if (AProjectileBase* Pellet = GetWorld()->SpawnActor<AProjectileBase>(
-					WeaponItemData->WeaponData.ProjectileClass, SpawnLocation, PelletRotation, SpawnParams))
-				{
-					// Use InitializeProjectile instead of InitializePelletProjectile
-					Pellet->InitializeProjectile(
-						WeaponItemData->WeaponData.Damage / WeaponItemData->WeaponData.ShotgunPelletCount,
-						WeaponItemData->WeaponData.ProjectileSpeed,
-						WeaponItemData->WeaponData.ProjectileGravityScale
-					);
-				}
-			}
-		}
-	}
-	else
+    if (WeaponItemData->WeaponCategory == EWeaponCategory::Shotgun && WeaponItemData->WeaponData.ShotgunPelletCount > 1)
+    {
+    	UE_LOG(LogTemp, Log, TEXT("Firing shotgun with %d pellets"), WeaponItemData->WeaponData.ShotgunPelletCount);
+        for (int32 i = 0; i < WeaponItemData->WeaponData.ShotgunPelletCount; i++)
+        {
+            // Calculate spread for each pellet
+            float RandomPitch = FMath::FRandRange(-WeaponItemData->WeaponData.SpreadAngle, WeaponItemData->WeaponData.SpreadAngle);
+            float RandomYaw = FMath::FRandRange(-WeaponItemData->WeaponData.SpreadAngle, WeaponItemData->WeaponData.SpreadAngle);
+
+            // Create pellet rotation with spread
+            FRotator PelletRotation = SpawnRotation + FRotator(RandomPitch, RandomYaw, 0.0f);
+
+            // Create slightly offset spawn location to prevent collision
+            FVector RandomOffset = FVector(
+                FMath::FRandRange(-2.0f, 2.0f),
+                FMath::FRandRange(-2.0f, 2.0f),
+                FMath::FRandRange(-2.0f, 2.0f)
+            );
+            FVector PelletSpawnLocation = SpawnLocation + RandomOffset;
+            UE_LOG(LogTemp, Log, TEXT("Pellet %d spawn location: %s, rotation: %s"), 
+				   i, *PelletSpawnLocation.ToString(), *PelletRotation.ToString());
+            if (WeaponItemData->WeaponData.ProjectileClass)
+            {
+                FActorSpawnParameters SpawnParams;
+                SpawnParams.Owner = GetOwner();
+                SpawnParams.Instigator = Cast<APawn>(GetOwner());
+                SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+                // Spawn pellet with the spread rotation
+                if (AProjectileBase* Pellet = GetWorld()->SpawnActor<AProjectileBase>(
+                    WeaponItemData->WeaponData.ProjectileClass, PelletSpawnLocation, PelletRotation, SpawnParams))
+                {
+                	UE_LOG(LogTemp, Log, TEXT("Spawned pellet %d at location: %s"), i, *PelletSpawnLocation.ToString());
+                    // Use InitializeProjectile
+                    Pellet->InitializePelletProjectile(
+                        WeaponItemData->WeaponData.Damage,
+                        WeaponItemData->WeaponData.ProjectileSpeed,
+                        WeaponItemData->WeaponData.ProjectileGravityScale,
+                        WeaponItemData->WeaponData.ShotgunPelletCount,
+                        WeaponItemData->WeaponData.SpreadAngle
+                        );
+                }
+            }
+        }
+    }
+    else
     {
         // Single projectile (rifle, handgun, etc.)
         if (WeaponItemData->WeaponData.ProjectileClass)

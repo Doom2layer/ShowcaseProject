@@ -56,13 +56,12 @@ void AProjectileBase::InitializeProjectile(float Damage, float Speed, float Grav
 }
 
 void AProjectileBase::InitializePelletProjectile(float Damage, float Speed, float GravityScale, int32 Pellets,
-	float Spread, const FVector& Direction)
+	float Spread)
 {
 	ProjectileDamage = Damage / Pellets; // Divide damage among pellets
 	ProjectileMovement->InitialSpeed = Speed;
 	ProjectileMovement->MaxSpeed = Speed;
 	ProjectileMovement->ProjectileGravityScale = GravityScale;
-	ProjectileMovement->Velocity = Direction * Speed; // Set initial velocity based on provided direction
 	bIsPelletProjectile = true;
 	PelletCount = Pellets;
 	SpreadAngle = Spread;

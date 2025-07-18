@@ -26,7 +26,7 @@ public:
 	void InitializeProjectile(float Damage, float Speed, float GravityScale);
 
 	UFUNCTION(BlueprintCallable)
-	void InitializePelletProjectile(float Damage, float Speed, float GravityScale, int32 Pellets, float Spread, const FVector& Direction);
+	void InitializePelletProjectile(float Damage, float Speed, float GravityScale, int32 Pellets, float Spread);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	bool bIsPelletProjectile;

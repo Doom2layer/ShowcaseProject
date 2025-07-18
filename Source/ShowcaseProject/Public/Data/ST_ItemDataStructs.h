@@ -3,9 +3,12 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "Weapons/ProjectileBase.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "ST_ItemDataStructs.generated.h"
 
 class AWeaponBase;
+class UNiagaraSystem;
 
 UENUM()
 enum class EAmmoType : uint8
@@ -107,8 +110,8 @@ struct FItemWeaponData
 
 	// Effects
 	UPROPERTY(EditAnywhere, Category="Weapon Data")
-	UParticleSystem* MuzzleFlash = nullptr;
-
+	UNiagaraSystem* FireEffectMuzzle;
+	
 	UPROPERTY(EditAnywhere, Category="Weapon Data")
 	USoundBase* FireSound = nullptr;
 
