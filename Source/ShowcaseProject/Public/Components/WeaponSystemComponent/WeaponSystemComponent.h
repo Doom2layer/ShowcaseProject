@@ -32,6 +32,13 @@ public:
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	//Ammo Management
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	FORCEINLINE	bool CanReloadFromInventory() const;
+
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	int32 GetAvailableAmmoInInventory(EAmmoType AmmoType) const;
 	
 	//Weapon Managment
 	UFUNCTION(BlueprintCallable, Category="Weapon System")
@@ -144,6 +151,7 @@ private:
 	UPROPERTY()
 	AShowcaseProjectCharacter* OwningCharacter;
 	EWeaponSlot PendingWeaponSlot = EWeaponSlot::Primary;
+	bool bIsWeaponAnimationPlaying = false;
 	
 	UAnimMontage* GetEquipMontageForSlot(EWeaponSlot Slot);
 	UAnimMontage* GetHolsterMontageForSlot(EWeaponSlot Slot);

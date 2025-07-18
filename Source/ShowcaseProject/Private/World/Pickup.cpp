@@ -42,6 +42,10 @@ void APickup::InitializePickup(const TSubclassOf<UItemBase> BaseClass, const int
 		ItemReference->ItemNumericData = ItemData->ItemNumericData;
 		ItemReference->ItemTextData = ItemData->ItemTextData;
 		ItemReference->ItemAssetData = ItemData->ItemAssetData;
+		ItemReference->WeaponData = ItemData->WeaponData;
+		ItemReference->AmmoData = ItemData->AmmoData;
+		ItemReference->ItemStatistics = ItemData->ItemStatistics;
+		
 
 		InQuantity <= 0 ? ItemReference->SetQuantity(1) : ItemReference->SetQuantity(InQuantity);
 

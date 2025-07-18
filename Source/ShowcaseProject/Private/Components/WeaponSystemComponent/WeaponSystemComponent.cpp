@@ -3,6 +3,7 @@
 
 #include "Components/WeaponSystemComponent/WeaponSystemComponent.h"
 #include "Items/ItemBase.h"
+#include "Components/InventoryComponent/InventoryComponent.h"
 #include "Player/ShowcaseProjectCharacter.h"
 #include "Weapons/WeaponBase.h"
 
@@ -18,12 +19,20 @@ UWeaponSystemComponent::UWeaponSystemComponent()
 	MeleeWeapon = nullptr;
 	CurrentEquippedWeapon = nullptr;
 	OwningCharacter = nullptr;
+	EquipPrimaryMontage = nullptr;
+	HolsterPrimaryMontage = nullptr;
+	EquipSecondaryMontage = nullptr;
+	HolsterSecondaryMontage = nullptr;
+	EquipMeleeMontage = nullptr;
+	HolsterMeleeMontage = nullptr;
 
 	// ...
 }
 
 void UWeaponSystemComponent::DrawWeaponWithAnimation(EWeaponSlot Slot)
 {
+	if (bIsWeaponAnimationPlaying) return; // Prevent re-entry
+
 	AWeaponBase* WeaponInSlot = GetWeaponInSlot(Slot);
 	if (!WeaponInSlot || WeaponInSlot->GetWeaponState() != EWeaponState::Holstered) return;
 
@@ -41,6 +50,7 @@ void UWeaponSystemComponent::DrawWeaponWithAnimation(EWeaponSlot Slot)
 	UAnimMontage* EquipMontage = GetEquipMontageForSlot(Slot);
 	if (EquipMontage)
 	{
+		bIsWeaponAnimationPlaying = true;
 		PlayWeaponMontage(EquipMontage);
 		UE_LOG(LogTemp, Log, TEXT("Starting equip animation for slot: %s"), *UEnum::GetValueAsString(Slot));
 	}
@@ -53,12 +63,15 @@ void UWeaponSystemComponent::DrawWeaponWithAnimation(EWeaponSlot Slot)
 
 void UWeaponSystemComponent::HolsterWeaponWithAnimation(EWeaponSlot Slot)
 {
+	if (bIsWeaponAnimationPlaying) return; // Prevent re-entry
+	
 	AWeaponBase* WeaponInSlot = GetWeaponInSlot(Slot);
 	if (!WeaponInSlot || WeaponInSlot->GetWeaponState() != EWeaponState::Equipped) return;
 
 	UAnimMontage* HolsterMontage = GetHolsterMontageForSlot(Slot);
 	if (HolsterMontage)
 	{
+		bIsWeaponAnimationPlaying = true;
 		PlayWeaponMontage(HolsterMontage);
 		UE_LOG(LogTemp, Log, TEXT("Starting holster animation for slot: %s"), *UEnum::GetValueAsString(Slot));
 	}
@@ -72,13 +85,14 @@ void UWeaponSystemComponent::HolsterWeaponWithAnimation(EWeaponSlot Slot)
 void UWeaponSystemComponent::OnEquipAnimationComplete(EWeaponSlot Slot)
 {
 	UE_LOG(LogTemp, Log, TEXT("Equip animation complete for slot: %s"), *UEnum::GetValueAsString(Slot));
+	bIsWeaponAnimationPlaying = false;
 	DrawWeapon(Slot);
-
 }
 
 void UWeaponSystemComponent::OnHolsterAnimationComplete(EWeaponSlot Slot)
 {
 	UE_LOG(LogTemp, Log, TEXT("Holster animation complete for slot: %s"), *UEnum::GetValueAsString(Slot));
+	bIsWeaponAnimationPlaying = false;
 	HolsterWeapon(Slot);
     
 	// Check if we have a pending weapon switch
@@ -90,6 +104,7 @@ void UWeaponSystemComponent::OnHolsterAnimationComplete(EWeaponSlot Slot)
 		UAnimMontage* EquipMontage = GetEquipMontageForSlot(PendingWeaponSlot);
 		if (EquipMontage)
 		{
+			bIsWeaponAnimationPlaying = true;
 			PlayWeaponMontage(EquipMontage);
 			UE_LOG(LogTemp, Log, TEXT("Starting pending equip animation for slot: %s"), *UEnum::GetValueAsString(PendingWeaponSlot));
 		}
@@ -174,6 +189,43 @@ void UWeaponSystemComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+bool UWeaponSystemComponent::CanReloadFromInventory() const
+{
+	if (!CurrentEquippedWeapon || !OwningCharacter)
+	{
+		return false;
+	}
+
+	// Check if weapon needs reload
+	if (!CurrentEquippedWeapon->CanReload())
+	{
+		return false;
+	}
+
+	// Check if we have ammo in inventory
+	EAmmoType RequiredAmmoType = CurrentEquippedWeapon->GetRequiredAmmoType();
+	return GetAvailableAmmoInInventory(RequiredAmmoType) > 0;
+}
+
+int32 UWeaponSystemComponent::GetAvailableAmmoInInventory(EAmmoType AmmoType) const
+{
+	if (!OwningCharacter) return 0;
+    
+	UInventoryComponent* Inventory = OwningCharacter->GetInventory();
+	if (!Inventory) return 0;
+    
+	int32 TotalAmmo = 0;
+	for (UItemBase* Item : Inventory->GetInventoryContents())
+	{
+		if (Item && Item->ItemType == EItemType::Ammo && 
+			Item->AmmoData.AmmoType == AmmoType)
+		{
+			TotalAmmo += Item->Quantity;
+		}
+	}
+	return TotalAmmo;
 }
 
 bool UWeaponSystemComponent::EquipWeapon(UItemBase* WeaponToEquip)
@@ -416,7 +468,7 @@ void UWeaponSystemComponent::Fire()
 {
 	if (CurrentEquippedWeapon)
 	{
-		CurrentEquippedWeapon->Fire();
+		CurrentEquippedWeapon->StartFire();
 	}
 }
 
@@ -424,6 +476,7 @@ void UWeaponSystemComponent::Reload()
 {
 	if (CurrentEquippedWeapon)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Reloading weapon: %s"), *CurrentEquippedWeapon->GetName());
 		CurrentEquippedWeapon->Reload();
 	}
 }
@@ -493,8 +546,13 @@ AWeaponBase* UWeaponSystemComponent::SpawnWeaponActor(UItemBase* WeaponItem)
 	
 	// You'll need to determine weapon class from item data
 	// For now using default - implement proper class mapping
-	TSubclassOf<AWeaponBase> WeaponClass = AWeaponBase::StaticClass();
-
+    TSubclassOf<AWeaponBase> WeaponClass = WeaponItem->WeaponData.WeaponActorClass;
+	if (!WeaponClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No weapon class specified for item: %s, using default"), *WeaponItem->GetName());
+		WeaponClass = AWeaponBase::StaticClass(); // Fallback to default
+	}
+	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = OwningCharacter;
 	SpawnParams.Instigator = OwningCharacter->GetInstigator();

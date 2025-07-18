@@ -118,12 +118,14 @@ void AShowcaseProjectCharacter::SetupPlayerInputComponent(UInputComponent *Playe
 		EnhancedInputComponent->BindAction(EquipPrimary, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::EquipPrimaryWeapon);
 		EnhancedInputComponent->BindAction(EquipSecondary, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::EquipSecondaryWeapon);
 		
-		// Aim and Fire
+		// Aim, Fire and Reload
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::BeginAim);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AShowcaseProjectCharacter::EndAim);
 
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AShowcaseProjectCharacter::BeginFire);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AShowcaseProjectCharacter::EndFire);
+
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AShowcaseProjectCharacter::Reload);
 		
 	}
 	else
@@ -292,12 +294,37 @@ void AShowcaseProjectCharacter::EndAim()
 
 void AShowcaseProjectCharacter::BeginFire()
 {
-	return;
+	if (WeaponSystemComponent)
+	{
+		if (WeaponSystemComponent->GetEquippedWeapon())
+		{
+			WeaponSystemComponent->GetEquippedWeapon()->StartFire();
+		}
+		else
+		{
+			UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon equipped to fire!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("WeaponSystemComponent is not initialized!"));
+	}
 }
 
 void AShowcaseProjectCharacter::EndFire()
 {
-	return;
+	if (WeaponSystemComponent)
+	{
+		if (WeaponSystemComponent->GetEquippedWeapon())
+		{
+			WeaponSystemComponent->GetEquippedWeapon()->StopFire();
+		}
+		else
+		{
+			UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon equipped to stop firing!"));
+		}
+	}
+	
 }
 
 void AShowcaseProjectCharacter::EquipPrimaryWeapon()
@@ -342,6 +369,15 @@ void AShowcaseProjectCharacter::EquipSecondaryWeapon()
 
 	// Draw the weapon (the component will handle holstering current weapon if needed)
 	WeaponSystemComponent->DrawWeaponWithAnimation(EWeaponSlot::Secondary);
+}
+
+void AShowcaseProjectCharacter::Reload()
+{
+	if (WeaponSystemComponent)
+	{
+		UE_LOG(LogTemplateCharacter, Log, TEXT("Reloading weapon"));
+		WeaponSystemComponent->Reload();
+	}
 }
 
 void AShowcaseProjectCharacter::UpdateInteractionWidget() const

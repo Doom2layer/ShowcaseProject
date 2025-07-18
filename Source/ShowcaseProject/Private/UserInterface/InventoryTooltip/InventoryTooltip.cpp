@@ -48,8 +48,8 @@ void UInventoryTooltip::NativeConstruct()
 	}
 
 	ItemName->SetText(ItemBeingHovered->ItemTextData.Name);
-	DamageValue->SetText(FText::AsNumber(ItemBeingHovered->ItemStatistics.Damage));
-	AccuracyRating->SetText(FText::AsNumber(ItemBeingHovered->ItemStatistics.Accuracy));
+	DamageValue->SetText(FText::AsNumber(ItemBeingHovered->WeaponData.Damage));
+	AccuracyRating->SetText(FText::AsNumber(ItemBeingHovered->WeaponData.Accuracy));
 	UsageText->SetText(ItemBeingHovered->ItemTextData.UsageText);
 	ItemDescription->SetText(ItemBeingHovered->ItemTextData.Description);
 	StackWeightValue->SetText(FText::AsNumber(ItemBeingHovered->GetItemStackWeight()));

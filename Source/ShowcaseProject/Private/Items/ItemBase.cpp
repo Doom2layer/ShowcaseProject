@@ -2,6 +2,7 @@
 
 
 #include "Items/ItemBase.h"
+#include "Weapons/ProjectileBase.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
 #include "Player/ShowcaseProjectCharacter.h"
 
@@ -28,6 +29,8 @@ UItemBase* UItemBase::CreateItemCopy() const
 	ItemCopy->ItemTextData = this->ItemTextData;
 	ItemCopy->ItemNumericData = this->ItemNumericData;
 	ItemCopy->ItemAssetData = this->ItemAssetData;
+	ItemCopy->WeaponData = this->WeaponData;
+	ItemCopy->AmmoData = this->AmmoData;
 	ItemCopy->bIsCopy = true;
 
 	return ItemCopy;

@@ -113,6 +113,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction *EquipSecondary;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction *ReloadAction;
+	
 	/** Target interactable object */
 	UPROPERTY(VisibleAnywhere, Category="Character | Interaction")
 	TScriptInterface<IInteractionInterface> TargetInteractable;
@@ -161,10 +164,17 @@ protected:
 	void Interact();
 	void BeginAim();
 	void EndAim();
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void BeginFire();
+	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void EndFire();
+	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void EquipPrimaryWeapon();
+	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void EquipSecondaryWeapon();
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void Reload();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 

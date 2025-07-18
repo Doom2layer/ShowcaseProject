@@ -7,6 +7,7 @@
 #include "ItemBase.generated.h"
 
 class UInventoryComponent;
+class AProjectileBase;
 
 /**
  * 
@@ -35,7 +36,13 @@ public:
 	EItemType ItemType;
 
 	UPROPERTY(VisibleAnywhere, Category="Item")
+	FItemAmmoData AmmoData;
+
+	UPROPERTY(VisibleAnywhere, Category="Item")
 	EItemQuality ItemQuality;
+
+	UPROPERTY(VisibleAnywhere, Category="Item")
+	FItemWeaponData WeaponData;
 
 	UPROPERTY(VisibleAnywhere, Category="Item")
 	FItemStatistics ItemStatistics;
@@ -74,8 +81,6 @@ public:
 	
 	UFUNCTION(Category= "Item")
 	virtual void UseItem(AShowcaseProjectCharacter *Character);
-
-	
 	
 protected:
 	bool operator==(const FName& OtherID) const{ return this->ItemID == OtherID;  };

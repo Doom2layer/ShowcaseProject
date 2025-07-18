@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"	
 #include "GameFramework/Actor.h"
+#include "Items/ItemBase.h"
 #include "WeaponBase.generated.h"
+
+class AShowcaseProjectCharacter;
 
 UENUM()
 enum class EWeaponState: uint8
@@ -27,13 +30,31 @@ public:
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Ammo")
+	FORCEINLINE int32 GetCurrentAmmoInMagazine() const { return CurrentAmmoInMagazine; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Ammo")
+	FORCEINLINE int32 GetCurrentReserveAmmo() const { return CurrentReserveAmmo; }
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+	int32 GetMaxMagazineSize() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+	FORCEINLINE bool IsReloading() const { return bIsReloading; }
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+	FORCEINLINE bool NeedsReload() const { return CurrentAmmoInMagazine < GetMaxMagazineSize() && CurrentReserveAmmo > 0; }	
 	
 	// Initialize weapon with item data
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void InitializeWeapon(UItemBase* WeaponItem);
 	
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void Fire();
+	void StartFire();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void StopFire();
 	
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Attack();
@@ -76,10 +97,34 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	bool IsUsingSkeletalMesh() const { return bUsingSkeletalMesh; }
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void PlayGunEffects();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void StartFireCooldown();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void FireBullet();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	EAmmoType GetRequiredAmmoType() const;
+
+	FTimerHandle ReloadTimerHandle;
+
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Ammo")
+	int32 CurrentAmmoInMagazine;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Ammo")
+	int32 CurrentReserveAmmo;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|State")
+	bool bIsReloading;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComponent;
@@ -99,7 +144,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bUsingSkeletalMesh;
 
-	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool HasAmmoInInventory() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	int32 GetAmmoFromInventory(int32 AmountNeeded);
+
+	UPROPERTY()
+	AShowcaseProjectCharacter* OwningCharacter;
 
 	void SetupMeshComponents();
 	

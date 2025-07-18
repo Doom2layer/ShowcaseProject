@@ -2,7 +2,18 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "Weapons/ProjectileBase.h"
 #include "ST_ItemDataStructs.generated.h"
+
+class AWeaponBase;
+
+UENUM()
+enum class EAmmoType : uint8
+{
+	PistolAmmo UMETA (DisplayName = "Pistol Ammo"),
+	RifleAmmo UMETA (DisplayName = "Rifle Ammo"),
+	ShotgunAmmo UMETA (DisplayName = "Shotgun Ammo"),
+};
 
 UENUM()
 enum class EItemQuality : uint8
@@ -35,42 +46,107 @@ enum class EWeaponCategory : uint8
 };
 
 USTRUCT()
+struct FItemWeaponData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	TSubclassOf<AWeaponBase> WeaponActorClass;
+	
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float Damage;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	EAmmoType AmmoType;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	int32 ShotgunPelletCount;
+	
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float Range;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float FireRate;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float ReloadTime;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float Accuracy;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	int32 MagazineSize;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	int32 MaxAmmo;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float RecoilIntensity;
+    
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float SpreadAngle;
+    
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	bool bIsAutomatic;
+    
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float AimDownSightTime;
+	
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UAnimMontage* ReloadMontage;
+
+	// Projectile properties
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	TSubclassOf<AProjectileBase> ProjectileClass;
+	
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float ProjectileSpeed;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	float ProjectileGravityScale;
+
+	// Effects
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UParticleSystem* MuzzleFlash = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	USoundBase* FireSound = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	USoundBase* EmptySound = nullptr;
+
+	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UAnimMontage* FireMontage = nullptr;
+};
+
+USTRUCT()
+struct FItemAmmoData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, Category="Ammo Data")
+	EAmmoType AmmoType;
+    
+	UPROPERTY(EditAnywhere, Category="Ammo Data")
+	int32 AmmoPerBox;  // How many rounds per pickup/box
+    
+	UPROPERTY(EditAnywhere, Category="Ammo Data")
+	float DamageModifier;  // Optional damage multiplier for special ammo types
+    
+	UPROPERTY(EditAnywhere, Category="Ammo Data")
+	bool bIsPenetrating;  // Can penetrate armor/walls
+    
+	UPROPERTY(EditAnywhere, Category="Ammo Data")
+	float PenetrationPower;
+};
+
+USTRUCT()
 struct FItemStatistics
 {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	float Damage;
-	
-	UPROPERTY(EditAnywhere)
-	float Range;
-	
-	UPROPERTY(EditAnywhere)
-	float FireRate;
-
-	UPROPERTY(EditAnywhere)
-	float ReloadTime;
-
-	UPROPERTY(EditAnywhere)
-	float Accuracy;
-
-	UPROPERTY(EditAnywhere)
-	int32 MagazineSize;
-    
-	UPROPERTY(EditAnywhere)
-	int32 MaxAmmo;
-    
-	UPROPERTY(EditAnywhere)
-	float RecoilIntensity;
-    
-	UPROPERTY(EditAnywhere)
-	float SpreadAngle;
-    
-	UPROPERTY(EditAnywhere)
-	bool bIsAutomatic;
-    
-	UPROPERTY(EditAnywhere)
-	float AimDownSightTime;
+	float HealthRestoration;
 
 	UPROPERTY(EditAnywhere)
 	bool bIsDiscardable;
@@ -141,6 +217,12 @@ struct FItemData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere , Category="Item Data")
 	EWeaponCategory WeaponCategory;
+
+	UPROPERTY(EditAnywhere, Category="Item Data")
+	FItemWeaponData WeaponData;
+
+	UPROPERTY(EditAnywhere, Category="Item Data")
+	FItemAmmoData AmmoData;
 
 	UPROPERTY(EditAnywhere, Category="Item Data")
 	EItemType ItemType;

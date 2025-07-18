@@ -10,6 +10,7 @@
 
 class UCharacterMovementComponent;
 class AShowcaseProjectCharacter;
+class AWeaponBase;
 enum class EWeaponSlot : uint8;
 /**
  * 
@@ -30,7 +31,7 @@ public:
 	// Used in animation blueprint
 	UFUNCTION(BlueprintCallable)
 	void UpdateAnimationProperties(float DeltaTime);
-
+	void CheckEquippedWeapon();
 	virtual void NativeInitializeAnimation() override;
 
 private:
@@ -49,10 +50,23 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
 	FVector Velocity;
 
+	//Direction
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float Direction;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
 	bool bShouldMove;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
 	bool bIsFalling;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon Animation", meta=(AllowPrivateAccess="true"))
+	bool bIsShotgunEquipped = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon Animation", meta=(AllowPrivateAccess="true"))
+	bool bIsRifleEquipped = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon Animation", meta=(AllowPrivateAccess="true"))
+	bool bIsHandgunEquipped = false;
 	
 };
