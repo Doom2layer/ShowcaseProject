@@ -15,7 +15,8 @@
 #include "Components/InventoryComponent/InventoryComponent.h"
 #include  "Components/WeaponSystemComponent/WeaponSystemComponent.h"
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
-#include "Items/ItemBase.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 #include "UserInterface/WeaponHud/WeaponHUD.h"
 #include "Weapons/WeaponBase.h"
 
@@ -71,6 +72,8 @@ AShowcaseProjectCharacter::AShowcaseProjectCharacter()
 	PlayerInventory->SetWeightCapacity(100.0f); // Set the weight capacity of the inventory
 
 	WeaponSystemComponent = CreateDefaultSubobject<UWeaponSystemComponent>(TEXT("WeaponSystemComponent_New"));
+
+	SetupStimuliSource();
 }
 
 
@@ -394,6 +397,16 @@ void AShowcaseProjectCharacter::RotateTowardsCrosshair(float RotationSpeed, floa
 
 		// Apply the rotation
 		SetActorRotation(NewRotation);
+	}
+}
+
+void AShowcaseProjectCharacter::SetupStimuliSource()
+{
+	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
+	if (StimuliSource)
+	{
+		StimuliSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimuliSource->RegisterWithPerceptionSystem();
 	}
 }
 

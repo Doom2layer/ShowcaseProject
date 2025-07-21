@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "ShowcaseProjectCharacter.generated.h"
 
+class UAIPerceptionStimuliSourceComponent;
 enum class EWeaponSlot : uint8;
 class UWeaponSystemComponent;
 class UInventoryComponent;
@@ -180,6 +181,8 @@ protected:
 	float FiringRotationSpeed = 15.0f;
 
 	FVector CrosshairWorldDirection;
+
+	UAIPerceptionStimuliSourceComponent* StimuliSource;
 	
 	//Functions
 	void ToggleInventoryMenu();
@@ -194,7 +197,7 @@ protected:
 	void EndAim();
 	void UpdateCrosshairDirection();
 	void RotateTowardsCrosshair(float RotationSpeed, float DeltaTime);
-
+	void SetupStimuliSource();
 	void BeginFire();
 	void EndFire();
 	void EquipPrimaryWeapon();

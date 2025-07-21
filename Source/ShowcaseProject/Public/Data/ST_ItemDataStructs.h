@@ -4,7 +4,6 @@
 #include "Engine/DataTable.h"
 #include "Weapons/ProjectileBase.h"
 #include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
 #include "ST_ItemDataStructs.generated.h"
 
 class AWeaponBase;

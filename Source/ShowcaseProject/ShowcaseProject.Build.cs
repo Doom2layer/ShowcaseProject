@@ -8,6 +8,18 @@ public class ShowcaseProject : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AnimGraphRuntime", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core",
+			"CoreUObject",
+			"Engine",
+			"InputCore",
+			"EnhancedInput",
+			"AnimGraphRuntime",
+			"Niagara",
+			"GameplayTags",
+			"AIModule",
+			"GameplayTasks",
+			"NavigationSystem"
+		});
 	}
 }

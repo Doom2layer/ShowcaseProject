@@ -8,7 +8,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Items/ItemBase.h"
 #include "Weapons/WeaponBase.h"
-#include "KismetAnimationLibrary.h"
 #include "Player/ShowcaseProjectCharacter.h"
 
 // Act like beginplay

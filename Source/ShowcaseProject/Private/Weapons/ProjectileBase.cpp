@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "Weapons/ProjectileBase.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Weapons/ProjectileBase.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
