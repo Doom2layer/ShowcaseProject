@@ -3,8 +3,12 @@
 
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 
+#include "Components/CanvasPanelSlot.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/ShowcaseProjectCharacter.h"
 #include "UserInterface/MainMenu/MainMenu.h"
+#include "Weapons/WeaponBase.h"
+#include "UserInterface/WeaponHud/WeaponHUD.h"
 #include "UserInterface/InventoryMenu/InventoryMenu.h"
 #include "UserInterface/Interaction/InteractionWidget.h"
 #include "UserInterface/Inventory/InventoryPanel.h"
@@ -24,16 +28,29 @@ void AShowcaseHUD::BeginPlay()
 		MainMenuWidget->AddToViewport(0);
 		MainMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	if (WeaponHUDClass)
+	{
+		WeaponHUDWidget = CreateWidget<UWeaponHUD>(GetWorld(), WeaponHUDClass);
+		WeaponHUDWidget->AddToViewport(1);
+		WeaponHUDWidget->SetVisibility(ESlateVisibility::Collapsed);
+		// Set position to lower right corner
+		if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(WeaponHUDWidget->Slot))
+		{
+			CanvasSlot->SetAnchors(FAnchors(1.0f, 1.0f, 1.0f, 1.0f));
+			CanvasSlot->SetPosition(FVector2D(-250.0f, -120.0f)); 
+			CanvasSlot->SetSize(FVector2D(200.0f, 100.0f));
+		}
+	}
 	if (InventoryMenuClass)
 	{
 		InventoryMenuWidget = CreateWidget<UInventoryMenu>(GetWorld(), InventoryMenuClass);
-		InventoryMenuWidget->AddToViewport(1);
+		InventoryMenuWidget->AddToViewport(2);
 		InventoryMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	if (InteractionWidgetClass)
 	{
 		InteractionWidget = CreateWidget<UInteractionWidget>(GetWorld(), InteractionWidgetClass);
-		InteractionWidget->AddToViewport(2);
+		InteractionWidget->AddToViewport(3);
 		InteractionWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
@@ -134,5 +151,73 @@ void AShowcaseHUD::UpdateInteractionWidget(const FInteractableData* Interactable
 			InteractionWidget->SetVisibility(ESlateVisibility::Visible);
 		}
 		InteractionWidget->UpdateWidget(InteractableData);
+	}
+}
+
+void AShowcaseHUD::UpdateWeaponDisplay(AWeaponBase* EquippedWeapon)
+{
+	UE_LOG(LogTemp, Log, TEXT("Updating weapon display for: %s"), *GetNameSafe(EquippedWeapon));
+	if (!WeaponHUDWidget) return;
+
+	if (EquippedWeapon && EquippedWeapon->GetWeaponItemData())
+	{
+        
+		WeaponHUDWidget->UpdateWeaponInfo(EquippedWeapon->GetWeaponItemData()->ItemAssetData.Icon,
+			EquippedWeapon->GetCurrentAmmoInMagazine(),
+			EquippedWeapon->GetCurrentReserveAmmo()
+		);
+		
+		WeaponHUDWidget->UpdateCrosshair(
+			EquippedWeapon->GetWeaponItemData()->WeaponData.CrosshairTexture,
+			EquippedWeapon->GetWeaponItemData()->WeaponData.CrosshairColor,
+			EquippedWeapon->GetWeaponItemData()->WeaponData.CrosshairSize
+		);
+		WeaponHUDWidget->ShowCrosshair();
+
+		if (GetOwningPlayerController())
+		{
+			AShowcaseProjectCharacter* Character = Cast<AShowcaseProjectCharacter>(GetOwningPlayerController()->GetPawn());
+			if (Character && Character->IsAiming())
+			{
+				WeaponHUDWidget->StartAiming();
+			}
+		}
+	}
+	else
+	{
+		WeaponHUDWidget->HideCrosshair();
+		WeaponHUDWidget->ForceHide();
+	}
+}
+
+void AShowcaseHUD::OnWeaponAimStart()
+{
+	if (WeaponHUDWidget)
+	{
+		WeaponHUDWidget->StartAiming();
+	}
+}
+
+void AShowcaseHUD::OnWeaponAimStop()
+{
+	if (WeaponHUDWidget)
+	{
+		WeaponHUDWidget->StopAiming();
+	}
+}
+
+void AShowcaseHUD::OnWeaponFired()
+{
+	if (WeaponHUDWidget)
+	{
+		WeaponHUDWidget->OnWeaponFired();
+	}
+}
+
+void AShowcaseHUD::OnWeaponStoppedFiring()
+{
+	if (WeaponHUDWidget)
+	{
+		WeaponHUDWidget->OnWeaponStoppedFiring();
 	}
 }

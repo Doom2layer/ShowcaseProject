@@ -5,6 +5,7 @@
 #include "Items/ItemBase.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
 #include "Player/ShowcaseProjectCharacter.h"
+#include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 #include "Weapons/WeaponBase.h"
 
 // Sets default values for this component's properties
@@ -384,7 +385,14 @@ void UWeaponSystemComponent::HolsterWeapon(EWeaponSlot Slot)
 	{
 		CurrentEquippedWeapon = nullptr;
 	}
-
+	if (OwningCharacter)
+	{
+		AShowcaseHUD* HUD = Cast<AShowcaseHUD>(OwningCharacter->GetWorld()->GetFirstPlayerController()->GetHUD());
+		if (HUD)
+		{
+			HUD->UpdateWeaponDisplay(nullptr); // No weapon equipped
+		}
+	}
 	UE_LOG(LogTemp, Log, TEXT("Holstered weapon: %s in slot: %s"), *WeaponInSlot->GetName(), *UEnum::GetValueAsString(Slot));
 }
 
@@ -460,15 +468,30 @@ void UWeaponSystemComponent::DrawWeapon(EWeaponSlot Slot)
     {
         UE_LOG(LogTemp, Warning, TEXT("No valid mesh found for weapon: %s"), *WeaponInSlot->GetName());
     }
-
+	if (OwningCharacter)
+	{
+		AShowcaseHUD* HUD = Cast<AShowcaseHUD>(OwningCharacter->GetWorld()->GetFirstPlayerController()->GetHUD());
+		if (HUD)
+		{
+			HUD->UpdateWeaponDisplay(CurrentEquippedWeapon);
+		}
+	}
     UE_LOG(LogTemp, Log, TEXT("Drew weapon: %s in slot: %s"), *WeaponInSlot->GetName(), *UEnum::GetValueAsString(Slot));
 }
 
-void UWeaponSystemComponent::Fire()
+void UWeaponSystemComponent::StartFire()
 {
 	if (CurrentEquippedWeapon)
 	{
 		CurrentEquippedWeapon->StartFire();
+	}
+}
+
+void UWeaponSystemComponent::StopFire()
+{
+	if (CurrentEquippedWeapon)
+	{
+		CurrentEquippedWeapon->StopFire();
 	}
 }
 

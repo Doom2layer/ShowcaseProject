@@ -22,11 +22,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
 	void InitializeProjectile(float Damage, float Speed, float GravityScale);
 
-	UFUNCTION(BlueprintCallable)
 	void InitializePelletProjectile(float Damage, float Speed, float GravityScale, int32 Pellets, float Spread);
+
+	void DestroyProjectile();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	bool bIsPelletProjectile;
@@ -47,7 +47,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	float ProjectileDamage;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile|Lifetime")
+	float ProjectileLifetime = 10.0f; // Default 10 seconds
+
+	FTimerHandle LifetimeTimerHandle;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

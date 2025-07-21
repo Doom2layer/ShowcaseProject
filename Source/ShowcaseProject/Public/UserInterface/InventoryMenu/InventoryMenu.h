@@ -16,8 +16,6 @@ class SHOWCASEPROJECT_API UInventoryMenu : public UUserWidget
 {
 	GENERATED_BODY()
 
-
-
 public:
 	UPROPERTY()
 	AShowcaseProjectCharacter* PlayerCharacter;

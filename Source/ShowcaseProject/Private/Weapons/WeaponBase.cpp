@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/InventoryComponent/InventoryComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -127,14 +129,19 @@ void AWeaponBase::InitializeWeapon(UItemBase* WeaponItem)
 void AWeaponBase::StartFire()
 {
 	UE_LOG(LogTemp, Log, TEXT("Weapon %s starting fire"), *GetNameSafe(this));
-	UE_LOG(LogTemp, Log, TEXT("Checking Ammo: %d in magazine, %d in reserve"),
-		   CurrentAmmoInMagazine,
-		   CurrentReserveAmmo);
+    
+	// Check if we can fire first
+	if (!CanFire())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot start fire - CanFire() returned false"));
+		return;
+	}
+    
 	// Check if we have ammo
 	if (CurrentAmmoInMagazine <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Cannot fire - no ammo in magazine"));
-		//Play empty click sound
+		// Play empty click sound
 		if (WeaponItemData->WeaponData.EmptySound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(
@@ -147,46 +154,43 @@ void AWeaponBase::StartFire()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Weapon %s can fire"), *GetNameSafe(this));
-	// Set fire flag
+    
+	// Set fire flag AFTER we've confirmed we can fire
 	bCanFire = false;
 
-	//Play gun effects
 	if (WeaponItemData->WeaponData.bIsAutomatic)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Weapon %s is automatic, setting up fire timer"), *GetNameSafe(this));
-		//For autmatic weapons set up a timer to fire repeatedly
+		// For automatic weapons set up a timer to fire repeatedly
 		GetWorldTimerManager().SetTimer(
-			FireRateTimerHandle,
+			AutoFireTimerHandle,
 			this,
 			&AWeaponBase::FireBullet,
 			WeaponItemData->WeaponData.FireRate,
-			true,
-			0.0f
+			true
 		);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Weapon %s is single shot, firing immediately"), *GetNameSafe(this));
 		FireBullet();
-		// For single shot weapons, reset fire cooldown immediately
+		// For single shot weapons, start the cooldown timer
 		StartFireCooldown();
 	}
 }
 
 void AWeaponBase::StopFire()
 {
-	// Clear the firing timer for automatic weapons
-	if (GetWorldTimerManager().IsTimerActive(FireRateTimerHandle))
+	// Clear the automatic firing timer
+	if (GetWorldTimerManager().IsTimerActive(AutoFireTimerHandle))
 	{
-		GetWorldTimerManager().ClearTimer(FireRateTimerHandle);
+		GetWorldTimerManager().ClearTimer(AutoFireTimerHandle);
 	}
 
-	// For automatic weapons, allow firing again immediately when trigger is released
 	if (WeaponItemData && WeaponItemData->WeaponData.bIsAutomatic)
 	{
 		bCanFire = true;
 	}
-	// For single-shot weapons, bCanFire is controlled by the cooldown timer
 }
 
 void AWeaponBase::PlayGunEffects()
@@ -262,10 +266,47 @@ void AWeaponBase::PlayGunEffects()
 
 void AWeaponBase::FireBullet()
 {
-    // if (!CanFire()) return;
 
+	UE_LOG(LogTemp, Log, TEXT("Firing weapon: %s"), *GetNameSafe(this));
+
+	// Check if we still have ammo before firing
+	if (CurrentAmmoInMagazine <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No ammo available, stopping fire"));
+		StopFire(); // Stop automatic firing
+        
+		// Play empty click sound
+		if (WeaponItemData->WeaponData.EmptySound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				WeaponItemData->WeaponData.EmptySound,
+				GetActorLocation()
+			);
+		}
+		return;
+	}
+	
     // Consume ammo
     CurrentAmmoInMagazine--;
+	
+	// Check if we just ran out of ammo and stop automatic firing
+	if (CurrentAmmoInMagazine <= 0 && WeaponItemData->WeaponData.bIsAutomatic)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Magazine empty, stopping automatic fire"));
+		StopFire();
+	}
+
+	// Update HUD after ammo consumption
+	if (OwningCharacter)
+	{
+		AShowcaseHUD* HUD = Cast<AShowcaseHUD>(OwningCharacter->GetWorld()->GetFirstPlayerController()->GetHUD());
+		if (HUD)
+		{
+			HUD->UpdateWeaponDisplay(this);
+			HUD->OnWeaponFired();
+		}
+	}
 
     // Get spawn location and rotation from weapon
     FVector SpawnLocation;
@@ -288,7 +329,29 @@ void AWeaponBase::FireBullet()
         SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
         SpawnRotation = GetActorRotation();
     }
+	
+	FVector2D ViewportSize;
+	GetWorld()->GetGameViewport()->GetViewportSize(ViewportSize);
+	FVector2D CrosshairScreenPosition = ViewportSize * 0.5f;
 
+	// Convert crosshair screen position to world space
+	FVector CrosshairWorldLocation;
+	FVector CrosshairWorldDirection;
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		PC->DeprojectScreenPositionToWorld(
+			CrosshairScreenPosition.X, 
+			CrosshairScreenPosition.Y, 
+			CrosshairWorldLocation, 
+			CrosshairWorldDirection
+		);
+	}
+
+	// Calculate bullet direction from spawn point to crosshair world position
+	FVector TargetLocation = CrosshairWorldLocation + (CrosshairWorldDirection * 10000.0f);
+	FVector BulletDirection = (TargetLocation - SpawnLocation).GetSafeNormal();
+	SpawnRotation = BulletDirection.Rotation();
+	
     // Check if this is a shotgun (uses pellets)
     if (WeaponItemData->WeaponCategory == EWeaponCategory::Shotgun && WeaponItemData->WeaponData.ShotgunPelletCount > 1)
     {
@@ -300,7 +363,7 @@ void AWeaponBase::FireBullet()
             float RandomYaw = FMath::FRandRange(-WeaponItemData->WeaponData.SpreadAngle, WeaponItemData->WeaponData.SpreadAngle);
 
             // Create pellet rotation with spread
-            FRotator PelletRotation = SpawnRotation + FRotator(RandomPitch, RandomYaw, 0.0f);
+        	FRotator PelletRotation = SpawnRotation + FRotator(RandomPitch, RandomYaw, 0.0f);
 
             // Create slightly offset spawn location to prevent collision
             FVector RandomOffset = FVector(
@@ -338,21 +401,22 @@ void AWeaponBase::FireBullet()
     else
     {
         // Single projectile (rifle, handgun, etc.)
-        if (WeaponItemData->WeaponData.ProjectileClass)
-        {
-            FActorSpawnParameters SpawnParams;
-            SpawnParams.Owner = GetOwner();
-            SpawnParams.Instigator = Cast<APawn>(GetOwner());
-            if (AProjectileBase* Projectile = GetWorld()->SpawnActor<AProjectileBase>(
-                WeaponItemData->WeaponData.ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams))
-            {
-                Projectile->InitializeProjectile(
-                    WeaponItemData->WeaponData.Damage,
-                    WeaponItemData->WeaponData.ProjectileSpeed,
-                    WeaponItemData->WeaponData.ProjectileGravityScale
-                );
-            }
-        }
+    	if (WeaponItemData->WeaponData.ProjectileClass)
+    	{
+    		FActorSpawnParameters SpawnParams;
+    		SpawnParams.Owner = GetOwner();
+    		SpawnParams.Instigator = Cast<APawn>(GetOwner());
+
+    		if (AProjectileBase* Projectile = GetWorld()->SpawnActor<AProjectileBase>(
+					WeaponItemData->WeaponData.ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams))
+    		{
+    			Projectile->InitializeProjectile(
+					WeaponItemData->WeaponData.Damage,
+					WeaponItemData->WeaponData.ProjectileSpeed,
+					WeaponItemData->WeaponData.ProjectileGravityScale
+				);
+    		}
+    	}
     }
 
     PlayGunEffects();
@@ -361,10 +425,16 @@ void AWeaponBase::FireBullet()
 
 void AWeaponBase::StartFireCooldown()
 {
-	bCanFire = false;
-	float FireRate = WeaponItemData ? WeaponItemData->WeaponData.FireRate : 0.5f; // Default to 0.5 seconds if no data
-	GetWorldTimerManager().SetTimer(FireRateTimerHandle, this, &AWeaponBase::ResetFireCooldown, FireRate, false);
-
+	if (!WeaponItemData) return;
+    
+	// Set a timer to reset the fire capability after the fire rate delay
+	GetWorldTimerManager().SetTimer(
+		FireRateTimerHandle,
+		this,
+		&AWeaponBase::ResetFireCooldown,
+		WeaponItemData->WeaponData.FireRate,
+		false  // Don't loop - just fire once
+	);
 }
 
 void AWeaponBase::Attack()
@@ -383,7 +453,24 @@ bool AWeaponBase::CanFire() const
 		UE_LOG(LogTemp, Warning, TEXT("CanFire failed: bCanFire is false"));
 		return false;
 	}
-    
+
+	if (OwningCharacter->GetCharacterMovement()->IsFalling())
+	{
+		return false;
+	}
+
+	// Prevent firing during animations (if character is playing animation)
+	if (OwningCharacter->IsPlayingAnimation())
+	{
+		return false;
+	}
+
+	// Check if character is interacting (opening doors, etc.)
+	if (OwningCharacter->IsInteracting())
+	{
+		return false;
+	}
+	
 	if (WeaponState != EWeaponState::Equipped)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CanFire failed: Weapon not equipped (state: %s)"), 
@@ -408,7 +495,13 @@ bool AWeaponBase::CanFire() const
 		UE_LOG(LogTemp, Warning, TEXT("CanFire failed: Fire rate timer still active"));
 		return false;
 	}
-    
+	
+	if (WeaponItemData && WeaponItemData->WeaponData.bIsAutomatic && 
+	GetWorld()->GetTimerManager().IsTimerActive(AutoFireTimerHandle))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -509,6 +602,15 @@ void AWeaponBase::Reload()
 			WeaponItemData->WeaponData.ReloadTime,
 			false
 		);
+	}
+
+	if (OwningCharacter)
+	{
+		AShowcaseHUD* HUD = Cast<AShowcaseHUD>(OwningCharacter->GetWorld()->GetFirstPlayerController()->GetHUD());
+		if (HUD)
+		{
+			HUD->UpdateWeaponDisplay(this);
+		}
 	}
 }
 
@@ -689,5 +791,6 @@ void AWeaponBase::SetupMeshComponents()
 void AWeaponBase::ResetFireCooldown()
 {
 	bCanFire = true;
+	UE_LOG(LogTemp, Log, TEXT("Fire cooldown reset - weapon can fire again"));
 }
 

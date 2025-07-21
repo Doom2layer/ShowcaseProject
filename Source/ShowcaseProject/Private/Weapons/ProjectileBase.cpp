@@ -36,15 +36,22 @@ AProjectileBase::AProjectileBase()
 	CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
 
 	ProjectileDamage = 25.0f;
-
-	
 }
 
 // Called when the game starts or when spawned
 void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (ProjectileLifetime > 0.0f)
+	{
+		GetWorldTimerManager().SetTimer(
+		LifetimeTimerHandle,
+		this,
+		&AProjectileBase::DestroyProjectile,
+		ProjectileLifetime,
+		false // Do not loop
+		);
+	}
 }
 
 void AProjectileBase::InitializeProjectile(float Damage, float Speed, float GravityScale)
@@ -78,12 +85,30 @@ void AProjectileBase::InitializePelletProjectile(float Damage, float Speed, floa
 
 }
 
+void AProjectileBase::DestroyProjectile()
+{
+	UE_LOG(LogTemp, Log, TEXT("Projectile destroyed after lifetime: %f seconds"), ProjectileLifetime);
+    
+	// Clear the timer handle
+	if (GetWorldTimerManager().IsTimerActive(LifetimeTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(LifetimeTimerHandle);
+	}
+    
+	// Destroy the projectile
+	Destroy();
+}
+
 void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                             FVector NormalImpulse, const FHitResult& Hit)
 {
 	// Ignore collisions with other projectiles and the owner
 	if (OtherActor && OtherActor != GetOwner() && !OtherActor->IsA<AProjectileBase>())
 	{
+		if (GetWorldTimerManager().IsTimerActive(LifetimeTimerHandle))
+		{
+			GetWorldTimerManager().ClearTimer(LifetimeTimerHandle);
+		}
 		UE_LOG(LogTemp, Log, TEXT("Projectile hit: %s"), *OtherActor->GetName());
 		Destroy();
 	}

@@ -16,6 +16,7 @@
 #include  "Components/WeaponSystemComponent/WeaponSystemComponent.h"
 #include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 #include "Items/ItemBase.h"
+#include "UserInterface/WeaponHud/WeaponHUD.h"
 #include "Weapons/WeaponBase.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -141,6 +142,12 @@ void AShowcaseProjectCharacter::Tick(float DeltaSeconds)
 	if (GetWorld()->TimeSince(InteractionData.LastInteractionCheckTime) > InteractionCheckFrequency)
 	{
 		PerformInteractionCheck();
+	}
+
+	// Handle aiming rotation
+	if (bIsAiming && WeaponSystemComponent && WeaponSystemComponent->GetEquippedWeapon())
+	{
+		RotateTowardsCrosshair(AimingRotationSpeed, DeltaSeconds);
 	}
 }
 
@@ -283,26 +290,131 @@ void AShowcaseProjectCharacter::Interact()
 
 void AShowcaseProjectCharacter::BeginAim()
 {
-	return;
-}
+	if (WeaponSystemComponent && WeaponSystemComponent->GetEquippedWeapon())
+	{
+		bIsAiming = true;
 
+		//Slow down movement when aiming
+		GetCharacterMovement()->MaxWalkSpeed = AimWalkSpeed;
+
+		//Zoom in camera when aiming (adjust FOX)
+		if (FollowCamera)
+		{
+			if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+			{
+				PlayerController->SetViewTargetWithBlend(this, 0.2f, VTBlend_Linear, 0.0f, false);
+				PlayerController->PlayerCameraManager->SetFOV(AimFOV);
+			}
+		}
+		
+		// Show weapon HUD when aiming
+		if (HUD && WeaponSystemComponent->GetEquippedWeapon())
+		{
+			HUD->GetWeaponHUD()->StartAiming();
+		}
+		UE_LOG(LogTemplateCharacter, Log, TEXT("Started aiming"));
+	}
+}
 
 void AShowcaseProjectCharacter::EndAim()
 {
-	return;
+	if (WeaponSystemComponent && WeaponSystemComponent->GetEquippedWeapon())
+	{
+		bIsAiming = false;
+
+		//Restore normal movement speed
+		GetCharacterMovement()->MaxWalkSpeed = NormalWalkSpeed;
+		//Restore normal camera FOV
+		if (FollowCamera)
+		{
+			if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+			{
+				PlayerController->SetViewTargetWithBlend(this, 0.2f, VTBlend_Linear, 0.0f, false);
+				PlayerController->PlayerCameraManager->SetFOV(NormalFOV);
+			}
+		}
+		// Hide weapon HUD when stopping aim
+		if (HUD && WeaponSystemComponent->GetEquippedWeapon())
+		{
+			HUD->GetWeaponHUD()->StopAiming();
+			HUD->GetWeaponHUD()->HideCrosshair();
+		}
+		
+		UE_LOG(LogTemplateCharacter, Log, TEXT("Stopped aiming"));
+	}
+}
+
+void AShowcaseProjectCharacter::UpdateCrosshairDirection()
+{
+	if (const APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		// Get viewport size
+		FVector2D ViewportSize;
+		GetWorld()->GetGameViewport()->GetViewportSize(ViewportSize);
+		const FVector2D CrosshairScreenPosition = ViewportSize * 0.5f;
+
+		// Convert crosshair screen position to world space
+		FVector CrosshairWorldLocation;
+		PC->DeprojectScreenPositionToWorld(
+			CrosshairScreenPosition.X,
+			CrosshairScreenPosition.Y,
+			CrosshairWorldLocation,
+			CrosshairWorldDirection
+		);
+	}
+}
+
+void AShowcaseProjectCharacter::RotateTowardsCrosshair(float RotationSpeed, float DeltaTime)
+{
+	UpdateCrosshairDirection();
+
+	// Calculate target location in world space
+	const FVector CharacterLocation = GetActorLocation();
+	const FVector TargetLocation = CharacterLocation + (CrosshairWorldDirection * 1000.0f);
+
+	// Calculate direction from character to target (only use X and Y for yaw rotation)
+	FVector DirectionToTarget = (TargetLocation - CharacterLocation).GetSafeNormal();
+	DirectionToTarget.Z = 0.0f; // Remove vertical component for character rotation
+
+	if (!DirectionToTarget.IsZero())
+	{
+		// Calculate target rotation
+		FRotator TargetRotation = DirectionToTarget.Rotation();
+
+		// Get current rotation
+		FRotator CurrentRotation = GetActorRotation();
+
+		// Interpolate to target rotation
+		const FRotator NewRotation = FMath::RInterpTo(
+			CurrentRotation,
+			TargetRotation,
+			DeltaTime,
+			RotationSpeed
+		);
+
+		// Apply the rotation
+		SetActorRotation(NewRotation);
+	}
 }
 
 void AShowcaseProjectCharacter::BeginFire()
 {
 	if (WeaponSystemComponent)
 	{
-		if (WeaponSystemComponent->GetEquippedWeapon())
+		// Rotate quickly towards crosshair when firing (if not already aiming)
+		if (!bIsAiming)
 		{
-			WeaponSystemComponent->GetEquippedWeapon()->StartFire();
+			RotateTowardsCrosshair(FiringRotationSpeed, GetWorld()->GetDeltaSeconds());
+		}
+		
+		WeaponSystemComponent->StartFire();
+		if (HUD && WeaponSystemComponent->GetEquippedWeapon())
+		{
+			HUD->OnWeaponFired();
 		}
 		else
 		{
-			UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon equipped to fire!"));
+			UE_LOG(LogTemplateCharacter, Error, TEXT("HUD is not initialized!"));
 		}
 	}
 	else
@@ -315,16 +427,20 @@ void AShowcaseProjectCharacter::EndFire()
 {
 	if (WeaponSystemComponent)
 	{
-		if (WeaponSystemComponent->GetEquippedWeapon())
+			WeaponSystemComponent->StopFire();
+		if (HUD && WeaponSystemComponent->GetEquippedWeapon())
 		{
-			WeaponSystemComponent->GetEquippedWeapon()->StopFire();
+			HUD->OnWeaponStoppedFiring();
 		}
 		else
 		{
-			UE_LOG(LogTemplateCharacter, Warning, TEXT("No weapon equipped to stop firing!"));
+			UE_LOG(LogTemplateCharacter, Error, TEXT("HUD is not initialized!"));
 		}
 	}
-	
+	else
+	{
+			UE_LOG(LogTemplateCharacter, Error, TEXT("WeaponSystemComponent is not initialized!"));
+	}
 }
 
 void AShowcaseProjectCharacter::EquipPrimaryWeapon()

@@ -10,6 +10,8 @@ class UMainMenu;
 struct FInteractableData;
 class UInteractionWidget;
 class UInventoryMenu;
+class UWeaponHUD;
+class AWeaponBase;
 /**
  * 
  */
@@ -29,18 +31,26 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Widgets")
 	TSubclassOf<UInteractionWidget> InteractionWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UWeaponHUD> WeaponHUDClass;
+	
 	bool bIsInventoryMenuVisible;
 
 	bool bIsMainMenuVisible;
 
 	//FUNCTIONS
 	AShowcaseHUD();
-
+	FORCEINLINE UWeaponHUD* GetWeaponHUD() const { return WeaponHUDWidget; }
 	void ToggleInventoryMenu();
 	void ToggleMainMenu();
 	void ShowInteractionWidget() const;
 	void HideInteractionWidget() const;
 	void UpdateInteractionWidget(const FInteractableData* InteractableData) const;
+	void UpdateWeaponDisplay(AWeaponBase* EquippedWeapon);
+	void OnWeaponAimStart();
+	void OnWeaponAimStop();
+	void OnWeaponFired();
+	void OnWeaponStoppedFiring();
 
 protected:
 
@@ -50,6 +60,9 @@ protected:
 	
 	UPROPERTY()
 	UInventoryMenu* InventoryMenuWidget;
+
+	UPROPERTY()
+	UWeaponHUD* WeaponHUDWidget;
 
 	UPROPERTY()
 	UInteractionWidget* InteractionWidget;

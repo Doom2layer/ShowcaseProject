@@ -111,6 +111,10 @@ public:
 
 	FTimerHandle ReloadTimerHandle;
 
+	FTimerHandle FireRateTimerHandle;
+	
+	FTimerHandle AutoFireTimerHandle;
+	
 	
 protected:
 	// Called when the game starts or when spawned
@@ -155,7 +159,6 @@ protected:
 
 	void SetupMeshComponents();
 	
-	FTimerHandle FireRateTimerHandle;
 
 	void ResetFireCooldown();
 

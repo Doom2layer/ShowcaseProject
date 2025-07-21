@@ -50,13 +50,13 @@ public:
 	AShowcaseProjectCharacter();
 	
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent *GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE USpringArmComponent *GetCameraBoom() const { return CameraBoom; }
 
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent *GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent *GetFollowCamera() const { return FollowCamera; }
 	
 	FORCEINLINE bool IsInteracting() const { return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction);}
-
+	FORCEINLINE bool IsAiming() const { return bIsAiming; }
 	FORCEINLINE UInventoryComponent* GetInventory() const { return PlayerInventory; }
 	FORCEINLINE UWeaponSystemComponent* GetWeaponSystem() const { return WeaponSystemComponent; }
 
@@ -152,6 +152,34 @@ protected:
 	/** Inventory component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character | Weapon")
 	UWeaponSystemComponent* WeaponSystemComponent;
+
+	/** Is Aiming */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character | Aiming")
+	bool bIsAiming = false;
+	
+    /** Aiming Walk Speed */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Aiming")
+	float AimWalkSpeed = 200.0f;
+
+	/** Normal Walk Speed */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Aiming")
+	float NormalWalkSpeed = 500.0f;
+
+	/** Aiming FOV */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Aiming")
+	float AimFOV = 60.0f;
+
+	/** Normal FOV */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character | Aiming")
+	float NormalFOV = 90.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Aiming")
+	float AimingRotationSpeed = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Aiming")
+	float FiringRotationSpeed = 15.0f;
+
+	FVector CrosshairWorldDirection;
 	
 	//Functions
 	void ToggleInventoryMenu();
@@ -164,16 +192,13 @@ protected:
 	void Interact();
 	void BeginAim();
 	void EndAim();
+	void UpdateCrosshairDirection();
+	void RotateTowardsCrosshair(float RotationSpeed, float DeltaTime);
 
-	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void BeginFire();
-	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void EndFire();
-	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void EquipPrimaryWeapon();
-	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void EquipSecondaryWeapon();
-	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void Reload();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;

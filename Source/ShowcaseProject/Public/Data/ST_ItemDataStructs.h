@@ -99,27 +99,37 @@ struct FItemWeaponData
 	UAnimMontage* ReloadMontage;
 
 	// Projectile properties
-	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UPROPERTY(EditAnywhere, Category="Weapon Data | Projectile")
 	TSubclassOf<AProjectileBase> ProjectileClass;
 	
-	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UPROPERTY(EditAnywhere, Category="Weapon Data | Projectile")
 	float ProjectileSpeed;
 
-	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UPROPERTY(EditAnywhere, Category="Weapon Data | Projectile")
 	float ProjectileGravityScale;
 
 	// Effects
-	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UPROPERTY(EditAnywhere, Category="Weapon Data | Effects")
 	UNiagaraSystem* FireEffectMuzzle;
 	
-	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UPROPERTY(EditAnywhere, Category="Weapon Data | Effects")
 	USoundBase* FireSound = nullptr;
 
-	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UPROPERTY(EditAnywhere, Category="Weapon Data | Effects")
 	USoundBase* EmptySound = nullptr;
 
-	UPROPERTY(EditAnywhere, Category="Weapon Data")
+	UPROPERTY(EditAnywhere, Category="Weapon Data | Effects")
 	UAnimMontage* FireMontage = nullptr;
+
+	//Crosshair
+	UPROPERTY(EditAnywhere, Category = "Weapon Data | UI")
+	UTexture2D* CrosshairTexture;
+    
+	UPROPERTY(EditAnywhere, Category = "Weapon Data | UI")
+	FLinearColor CrosshairColor = FLinearColor::White;
+    
+	UPROPERTY(EditAnywhere, Category = "Weapon Data | UI")
+	float CrosshairSize = 1.0f;
 };
 
 USTRUCT()

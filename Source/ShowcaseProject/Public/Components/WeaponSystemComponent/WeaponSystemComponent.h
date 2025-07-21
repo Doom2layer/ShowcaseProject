@@ -64,7 +64,10 @@ public:
 
 	//Weapon Actions
 	UFUNCTION(BlueprintCallable, Category="Weapon System")
-	void Fire();
+	void StartFire();
+
+	UFUNCTION(BlueprintCallable, Category="Weapon System")
+	void StopFire();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon System")
 	void Reload();
