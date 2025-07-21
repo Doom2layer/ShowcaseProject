@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTTask_FindPathPoint.h"
-
+#include "NPC/Tasks/BTTask_FindPathPoint.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NPC/Character/NPC_BaseCharacter.h"
 #include "NPC/Controller/NPC_AIController.h"

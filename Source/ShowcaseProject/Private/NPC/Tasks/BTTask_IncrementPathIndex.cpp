@@ -10,7 +10,7 @@
 
 UBTTask_IncrementPathIndex::UBTTask_IncrementPathIndex(FObjectInitializer const& ObjectInitializer) : UBTTask_BlackboardBase(ObjectInitializer)
 {
-	NodeName = TEXT("Increment PathI Index");
+	NodeName = TEXT("Increment Path Index");
 }
 
 EBTNodeResult::Type UBTTask_IncrementPathIndex::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -47,6 +47,7 @@ EBTNodeResult::Type UBTTask_IncrementPathIndex::ExecuteTask(UBehaviorTreeCompone
 				BlackboardComponent->SetValueAsInt(GetSelectedBlackboardKey(),
 					(Direction == EDirectionType::Forward ? ++Index : --Index) % NoOfPoints);
 
+				UE_LOG(LogTemp, Log, TEXT("BTTask_IncrementPathIndex: New Index: %d"), BlackboardComponent->GetValueAsInt(GetSelectedBlackboardKey()));
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 				return EBTNodeResult::Succeeded;
 			}
