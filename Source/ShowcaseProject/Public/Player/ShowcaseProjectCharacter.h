@@ -15,7 +15,7 @@ class UInventoryComponent;
 class AShowcaseHUD;
 class UItemBase;
 class ABaseWeapon;
-
+class UShowcaseAnimInstance;
 
 USTRUCT()
 struct FInteractionData
@@ -126,7 +126,7 @@ protected:
 	AShowcaseHUD* HUD;
 
 	UPROPERTY()
-	class UShowcaseAnimInstance* AnimInstance;
+	UShowcaseAnimInstance* AnimInstance;
 
 	UPROPERTY()
 	bool bIsPlayingAnimation = false;
@@ -205,8 +205,6 @@ protected:
 	void Reload();
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
-
-
 	
 	/** Called for movement input */
 	void Move(const FInputActionValue &Value);

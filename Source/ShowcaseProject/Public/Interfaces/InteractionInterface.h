@@ -52,7 +52,6 @@ struct FInteractableData
 
 };
 
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UInteractionInterface : public UInterface

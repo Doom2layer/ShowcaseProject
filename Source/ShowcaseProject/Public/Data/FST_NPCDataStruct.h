@@ -7,7 +7,7 @@
 
 class UTexture2D;
 class USkeletalMesh;
-class UAnimBlueprint;
+class UNPC_AnimInstance;
 class USoundBase;
 
 USTRUCT(BlueprintType)
@@ -86,7 +86,7 @@ struct FST_NPCDataStruct : public FTableRowBase
     USkeletalMesh* NPCMesh;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Presentation")
-    TSubclassOf<UAnimBlueprint> AnimBlueprintClass;
+    TSubclassOf<UNPC_AnimInstance> AnimBlueprintClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Presentation")
     TArray<USoundBase*> VoiceLines;
