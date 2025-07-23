@@ -12,6 +12,8 @@
 #include "UserInterface/InventoryMenu/InventoryMenu.h"
 #include "UserInterface/Interaction/InteractionWidget.h"
 #include "UserInterface/Inventory/InventoryPanel.h"
+#include "Data/ST_DialogueStructs.h"
+#include "UserInterface/DialogueWidget/DialogueWidget.h"
 
 
 AShowcaseHUD::AShowcaseHUD()
@@ -219,5 +221,61 @@ void AShowcaseHUD::OnWeaponStoppedFiring()
 	if (WeaponHUDWidget)
 	{
 		WeaponHUDWidget->OnWeaponStoppedFiring();
+	}
+}
+
+// Fix your ShowDialogue implementation - you called the wrong method in DialogueComponent
+void AShowcaseHUD::ShowDialogue(const FDialogueNode& DialogueNode, UDialogueComponent* DialogueComponent)
+{
+    
+	if (!DialogueWidget && DialogueWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ShowcaseHUD: Creating dialogue widget"));
+		DialogueWidget = CreateWidget<UDialogueWidget>(GetWorld(), DialogueWidgetClass);
+		if (DialogueWidget)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ShowcaseHUD: Dialogue widget created successfully"));
+			DialogueWidget->AddToViewport(4);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ShowcaseHUD: Failed to create dialogue widget"));
+			return;
+		}
+	}
+
+	if (DialogueWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ShowcaseHUD: Setting dialogue component and displaying node"));
+		DialogueWidget->SetDialogueComponent(DialogueComponent);
+		DialogueWidget->DisplayDialogueNode(DialogueNode);
+
+		if (APlayerController* PC = GetOwningPlayerController())
+		{
+			const FInputModeGameAndUI InputMode;
+			PC->SetInputMode(InputMode);
+			PC->SetShowMouseCursor(true);
+			UE_LOG(LogTemp, Warning, TEXT("ShowcaseHUD: Input mode set to GameAndUI"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ShowcaseHUD: DialogueWidget is null"));
+	}
+}
+
+void AShowcaseHUD::HideDialogue()
+{
+	if (DialogueWidget)
+	{
+		DialogueWidget->HideDialogueNode();
+
+		// Restore game-only input mode
+		if (APlayerController* PC = GetOwningPlayerController())
+		{
+			const FInputModeGameOnly InputMode;
+			PC->SetInputMode(InputMode);
+			PC->SetShowMouseCursor(false);
+		}
 	}
 }

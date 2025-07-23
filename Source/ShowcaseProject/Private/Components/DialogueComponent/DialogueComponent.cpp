@@ -3,6 +3,8 @@
 
 #include "Components/DialogueComponent/DialogueComponent.h"
 #include "NPC/Character/NPC_BaseCharacter.h"
+#include "Player/ShowcaseProjectCharacter.h"
+#include "UserInterface/ShowcaseHUD/ShowcaseHUD.h"
 
 // Sets default values for this component's properties
 UDialogueComponent::UDialogueComponent()
@@ -56,9 +58,13 @@ bool UDialogueComponent::StartDialogue(AActor* Partner, FGameplayTag StartingNod
 	//Set NPC state to dialogue
 	OwnerNPC->SetNPCState(ENPCState::Dialogue);
 
+	UE_LOG(LogTemp, Log, TEXT("DialogueComponent: OwnerNPC %s state set to Dialogue"), *GetNameSafe(OwnerNPC));
+	
 	//Determine starting node
 	FGameplayTag NodeToStart = StartingNodeTag.IsValid() ? StartingNodeTag : OwnerNPC->NPCData.InitialDialogueNode;
 
+	UE_LOG(LogTemp, Log, TEXT("DialogueComponent: Starting node tag is %s"), *NodeToStart.ToString());
+	
 	AdvanceToNode(NodeToStart);
 
 	OnDialogueStart.Broadcast(DialoguePartner, NodeToStart);
@@ -72,6 +78,15 @@ void UDialogueComponent::EndDialogue()
 
 	ProcessExitActions();
 
+	// Hide dialogue UI
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		if (AShowcaseHUD* HUD = Cast<AShowcaseHUD>(PC->GetHUD()))
+		{
+			HUD->HideDialogue();
+		}
+	}
+	
 	//Clear dialogue state
 	bIsInDialogue = false;
 	DialoguePartner = nullptr;
@@ -123,6 +138,7 @@ void UDialogueComponent::SelectChoice(int32 ChoiceIndex)
 
 void UDialogueComponent::AdvanceToNode(FGameplayTag NodeTag)
 {
+	
 	if (!NodeTag.IsValid())
 	{
 		EndDialogue();
@@ -132,7 +148,6 @@ void UDialogueComponent::AdvanceToNode(FGameplayTag NodeTag)
 	FDialogueNode* NewNode = GetDialogueNodeByTag(NodeTag);
 	if (!NewNode)
 	{
-        UE_LOG(LogTemp, Warning, TEXT("DialogueComponent: Could not find dialogue node with tag %s"), *NodeTag.ToString());
 		EndDialogue();
 		return;
 	}
@@ -141,18 +156,36 @@ void UDialogueComponent::AdvanceToNode(FGameplayTag NodeTag)
 	{
 		if (!EvaluateCondition(Condition))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("DialogueComponent: Entry condition failed for node %s"), *NodeTag.ToString());
 			EndDialogue();
 			return;
 		}
 	}
+	
 	ProcessExitActions();
-
 	CurrentNodeTag = NodeTag;
 	CurrentNode = *NewNode;
-
 	ProcessEntryActions();
 
+	
+	// Show dialogue in UI
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DialogueComponent: Found player controller"));
+        
+		if (AShowcaseHUD* HUD = Cast<AShowcaseHUD>(PC->GetHUD()))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DialogueComponent: Found HUD, calling ShowDialogue"));
+			HUD->ShowDialogue(CurrentNode, this);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("DialogueComponent: Could not cast to ShowcaseHUD"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("DialogueComponent: Could not find player controller"));
+	}
 	OnDialogueNodeChanged.Broadcast(NodeTag);
 
 	//Handle auto-advance

@@ -60,7 +60,7 @@ public:
 	FORCEINLINE bool IsAiming() const { return bIsAiming; }
 	FORCEINLINE UInventoryComponent* GetInventory() const { return PlayerInventory; }
 	FORCEINLINE UWeaponSystemComponent* GetWeaponSystem() const { return WeaponSystemComponent; }
-
+	FORCEINLINE AShowcaseHUD* GetHUD() const { return HUD; }
 	FORCEINLINE bool IsPlayingAnimation() const { return bIsPlayingAnimation; }
 	void UpdateInteractionWidget() const;
 

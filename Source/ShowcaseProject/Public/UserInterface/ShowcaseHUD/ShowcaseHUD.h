@@ -6,12 +6,16 @@
 #include "GameFramework/HUD.h"
 #include "ShowcaseHUD.generated.h"
 
+struct FDialogueNode;
 class UMainMenu;
 struct FInteractableData;
 class UInteractionWidget;
 class UInventoryMenu;
 class UWeaponHUD;
 class AWeaponBase;
+class UDialogueWidget;
+class UDialogueComponent;
+
 /**
  * 
  */
@@ -33,6 +37,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UWeaponHUD> WeaponHUDClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UDialogueWidget> DialogueWidgetClass;
 	
 	bool bIsInventoryMenuVisible;
 
@@ -52,6 +59,12 @@ public:
 	void OnWeaponFired();
 	void OnWeaponStoppedFiring();
 
+	UFUNCTION(BlueprintCallable, Category="HUD | Dialogue")
+	void ShowDialogue(const FDialogueNode& DialogueNode, UDialogueComponent* DialogueComponent);
+
+	UFUNCTION(BlueprintCallable, Category="HUD | Dialogue")
+	void HideDialogue();
+	
 protected:
 
 	//PROPERTIES
@@ -64,6 +77,9 @@ protected:
 	UPROPERTY()
 	UWeaponHUD* WeaponHUDWidget;
 
+	UPROPERTY()
+	UDialogueWidget* DialogueWidget;
+	
 	UPROPERTY()
 	UInteractionWidget* InteractionWidget;
 
