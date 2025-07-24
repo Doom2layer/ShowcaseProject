@@ -108,7 +108,15 @@ public:
 	FORCEINLINE UAnimMontage* GetHookMontage() const { return HookMontage; }
 
 	// Damageable Interface
-	virtual void TakeDamage(float DamageAmount, AActor* DamageCauser) override;
+	virtual float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual float GetHealth() const override { return CurrentHealth; }
+	virtual float GetMaxHealth() const override { return MaxHealth; }
+	virtual bool IsAlive() const override { return CurrentHealth > 0.0f && !bIsDead; }
+	virtual void Die(const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual bool CanTakeDamage(const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) const override;
+	virtual float ModifyIncomingDamage(float BaseDamage, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) const override;
+	virtual float GetDamageMultiplier(const FDamageEvent& DamageEvent, const FName& BoneName = NAME_None) const override;
+	virtual bool ShouldRagdollOnDeath() const override { return bCanRagdoll; }
 
 	// Data Table Row Reference
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC Data")
@@ -158,6 +166,48 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="NPC | Dialogue")
 	UDialogueComponent* DialogueComponent;
 
+	// Damage immunity system
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	bool bIsInvulnerable = false;
+    
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+	float DamageResistance = 0.0f; // 0.0 = no resistance, 0.5 = 50% resistance, 1.0 = immunity
+    
+	// Death state management
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	bool bIsDead = false;
+    
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float DeathDelayTime = 10.0f; // Time before cleanup after death
+    
+	FTimerHandle DeathCleanupTimer;
+    
+	// Damage events
+	UPROPERTY(BlueprintAssignable, Category = "Damage")
+	FOnDamageTaken OnDamageTakenDelegate;
+    
+	UPROPERTY(BlueprintAssignable, Category = "Damage")
+	FOnDeath OnDeathDelegate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	TMap<FName, float> BoneDamageMultipliers = {
+		{TEXT("head"), 2.0f},
+		{TEXT("Head"), 2.0f},
+		{TEXT("skull"), 2.0f},
+		{TEXT("spine_03"), 1.5f}, // Upper torso
+		{TEXT("spine_02"), 1.2f}, // Mid torso
+		{TEXT("spine_01"), 1.0f}, // Lower torso
+	};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float RagdollImpulseStrength = 500.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	bool bCanRagdoll = true;
+
+	void EnableRagdoll(const FVector& ImpulseLocation = FVector::ZeroVector, const FVector& ImpulseDirection = FVector::ZeroVector);
+	void ApplyDeathImpulse(const FVector& ImpulseLocation, const FVector& ImpulseDirection);
+
 
 	UPROPERTY(VisibleAnywhere, Category="NPC | AI")
 	ANPC_AIController* NPCAIController;
@@ -180,9 +230,6 @@ protected:
 	UFUNCTION()
 	void OnHealthChanged(float NewHealth, float OldHealth);
 
-	UFUNCTION()
-	void OnDeath();
-
 	// IInteractionInterface implementation
 	virtual void BeginFocus() override;
 	virtual void EndFocus() override;
@@ -191,6 +238,10 @@ protected:
 	virtual void Interact(AShowcaseProjectCharacter* PlayerCharacter) override;
 	
 private:
+	void HandleDeath();
+	void CleanupAfterDeath();
+	void ProcessDamageEffects(float DamageAmount, const FDamageEvent& DamageEvent, AActor* DamageCauser);
+
 	//Behavior Tree for AI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta=(AllowPrivateAccess="true"))
 	UBehaviorTree *BehaviorTree;

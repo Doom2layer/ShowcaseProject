@@ -22,6 +22,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void SetDamageInstigator(AController* NewInstigator) { DamageInstigator = NewInstigator; }
+
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void SetDamageSource(AActor* NewSource) { DamageSource = NewSource; }
+
 	void InitializeProjectile(float Damage, float Speed, float GravityScale);
 
 	void InitializePelletProjectile(float Damage, float Speed, float GravityScale, int32 Pellets, float Spread);
@@ -57,18 +63,22 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	// USphereComponent* CollisionComponent;
-	//
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	// UStaticMeshComponent* ProjectileMesh;
-	//
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	// UProjectileMovementComponent* ProjectileMovement;
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	AController* DamageInstigator;
 
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	// float ProjectileDamage;
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	AActor* DamageSource;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	float HeadshotMultiplier = 2.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	TArray<FName> HeadshotBones = {TEXT("head"), TEXT("Head"), TEXT("skull"), TEXT("Skull")};
+
+	virtual void ApplyDamageToTarget(AActor* Target, const FHitResult& HitResult);
+	virtual bool IsHeadshotHit(const FHitResult& HitResult) const;
+	virtual float CalculateDamageForTarget(AActor* Target, const FHitResult& HitResult) const;
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,FVector NormalImpulse, const FHitResult& Hit);
+
 };

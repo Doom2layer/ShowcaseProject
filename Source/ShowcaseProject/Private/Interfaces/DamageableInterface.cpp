@@ -5,6 +5,23 @@
 
 // Add default functionality here for any IDamageableInterface functions that are not pure virtual.
 
-void IDamageableInterface::TakeDamage(float DamageAmount, AActor* DamageCauser)
+float IDamageableInterface::TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	return 0.0f; // Default implementation, can be overridden
+}
+
+float IDamageableInterface::GetHealth() const
+{
+	return 0.0f; // Default implementation, can be overridden
+}
+
+float IDamageableInterface::GetMaxHealth() const
+{
+	return 0.0f; // Default implementation, can be overridden
+}
+
+void IDamageableInterface::Die(const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 }
+

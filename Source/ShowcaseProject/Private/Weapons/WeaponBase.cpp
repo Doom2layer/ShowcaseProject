@@ -394,6 +394,11 @@ void AWeaponBase::FireBullet()
                         WeaponItemData->WeaponData.ShotgunPelletCount,
                         WeaponItemData->WeaponData.SpreadAngle
                         );
+                	if (OwningCharacter)
+                	{
+                		Pellet->SetDamageInstigator(OwningCharacter->GetController());
+                		Pellet->SetDamageSource(this);
+                	}
                 }
             }
         }
@@ -415,6 +420,11 @@ void AWeaponBase::FireBullet()
 					WeaponItemData->WeaponData.ProjectileSpeed,
 					WeaponItemData->WeaponData.ProjectileGravityScale
 				);
+    			if (OwningCharacter)
+    			{
+    				Projectile->SetDamageInstigator(OwningCharacter->GetController());
+    				Projectile->SetDamageSource(this);
+    			}
     		}
     	}
     }
