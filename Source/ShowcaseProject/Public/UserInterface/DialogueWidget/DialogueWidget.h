@@ -55,6 +55,18 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	UVerticalBox* ChoicesContainer;
 
+	// Blueprint-configurable choice button class - set this in your Blueprint
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue | Choice Button")
+	TSubclassOf<UChoiceButton> ChoiceButtonClass;
+
+	// Optional: Styling properties for choice buttons
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue | Choice Button")
+	FMargin ChoiceButtonPadding = FMargin(0.0f, 5.0f, 0.0f, 5.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue | Choice Button")
+	float ChoiceButtonSpacing = 5.0f;
+
+
 private:
 	// Critical: Use weak pointer for cross-system references
 	UPROPERTY()
@@ -67,8 +79,8 @@ private:
 	void HandleChoiceButtonClicked(UChoiceButton* ClickedButton, int32 ChoiceIndex);
 	
 	void CleanupDialogueBinding();
-	
 	void CleanupChoiceButtons();
+	void ApplyChoiceButtonStyling(UChoiceButton* ChoiceButton);
     
 	TArray<UChoiceButton*> ChoiceButtons;
 };

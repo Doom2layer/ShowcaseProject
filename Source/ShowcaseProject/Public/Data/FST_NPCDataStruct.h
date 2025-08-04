@@ -13,7 +13,7 @@ class USoundBase;
 USTRUCT(BlueprintType)
 struct FST_NPCDataStruct : public FTableRowBase
 {
-    GENERATED_BODY()
+    GENERATED_USTRUCT_BODY()
 
     // Core Identity
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Identity")
@@ -47,6 +47,9 @@ struct FST_NPCDataStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Personality", meta = (ClampMin = "0.0", ClampMax = "1.0"))
     float Alertness;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Personality", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+    float Neuroticism; // How easily the NPC panics or becomes anxious
 
     // Combat Properties
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")

@@ -1,5 +1,6 @@
 # Visual Studio 2015 user specific files
 .vs/
+./github
 
 # Compiled Object files
 *.slo
@@ -72,3 +73,7 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Ignore github co-pilot instructions
+.github/copilot-instructions.md
+.fake

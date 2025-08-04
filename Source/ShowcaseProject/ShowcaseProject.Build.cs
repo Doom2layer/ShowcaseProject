@@ -19,7 +19,12 @@ public class ShowcaseProject : ModuleRules
 			"GameplayTags",
 			"AIModule",
 			"GameplayTasks",
-			"NavigationSystem"
+			"NavigationSystem",
+			"UMG",
+			"Slate",
+			"SlateCore",
+			"StateTreeModule",
+			"GameplayStateTreeModule",
 		});
 	}
 }

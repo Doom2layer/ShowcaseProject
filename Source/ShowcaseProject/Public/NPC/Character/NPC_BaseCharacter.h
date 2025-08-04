@@ -7,12 +7,16 @@
 #include "Interfaces/DamageableInterface.h"
 #include "Data/FST_NPCDataStruct.h"
 #include "Interfaces/InteractionInterface.h"
+#include "NPC/StateTree/ShowcaseStateTreeComponent.h"
 #include "NPC_BaseCharacter.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnWeaponSpotted, AActor*, WeaponHolder, bool, bIsDrawn, float, ReactionIntensity);
+
 
 class ANPC_AIController;
 class UDialogueComponent;
+class UStateTreeComponent;
 class APatrolPath;
-class UBehaviorTree;
 class UInputComponent;
 struct FST_NPCDataStruct;
 class UAnimMontage;
@@ -21,15 +25,16 @@ class AActor;
 UENUM(BlueprintType)
 enum class ENPCState : uint8
 {
-	Idle,
-	Patrol,
-	Alert,
-	Combat,
-	Flee,
-	TakeCover,
-	Dialogue,
-	Dead
+	Idle UMETA(DisplayName = "Idle"),
+	Patrol UMETA(DisplayName = "Patrol"),
+	Alert UMETA(DisplayName = "Alert"),
+	Combat UMETA(DisplayName = "Combat"),
+	Flee UMETA(DisplayName = "Flee"),
+	TakeCover UMETA(DisplayName = "Take Cover"),
+	Dialogue UMETA(DisplayName = "Dialogue"),
+	Dead UMETA(DisplayName = "Dead"),
 };
+
 UENUM(BlueprintType)
 enum class ENPCRelationship : uint8
 {
@@ -38,6 +43,7 @@ enum class ENPCRelationship : uint8
 	Friendly,
 	Ally
 };
+
 
 UCLASS()
 class SHOWCASEPROJECT_API ANPC_BaseCharacter : public ACharacter, public IDamageableInterface, public IInteractionInterface
@@ -53,30 +59,11 @@ public:
 	void InitializeFromDataTable();
 
 	// State Management
-	UFUNCTION(BlueprintCallable, Category = "State")
+	// UFUNCTION(BlueprintCallable, Category = "State")
 	void SetNPCState(ENPCState NewState);
 
 	UFUNCTION(BlueprintPure, Category = "State")
 	ENPCState GetCurrentState() const { return CurrentState; }
-
-	// Relationship System
-	UFUNCTION(BlueprintPure, Category = "Faction")
-	ENPCRelationship GetRelationshipWithActor(AActor* OtherActor);
-
-	UFUNCTION(BlueprintPure, Category = "Faction")
-	float GetFactionRelationValue(FGameplayTag FactionTag);
-
-	UFUNCTION(BlueprintCallable, Category = "Faction")
-	void SetFactionRelation(FGameplayTag FactionTag, float RelationValue);
-
-	UFUNCTION(BlueprintPure, Category = "Combat")
-	bool ShouldFlee();
-
-	UFUNCTION(BlueprintPure, Category = "Combat")
-	bool ShouldTakeCover();
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void OnWeaponDrawn(AActor* WeaponOwner);
 
 	// Dialogue System
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
@@ -88,25 +75,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void EndDialogue();
 
-	// Personality-based Reactions
-	UFUNCTION(BlueprintPure, Category = "Personality")
-	float CalculateReactionIntensity(FGameplayTag ReactionType);
-
-	UFUNCTION(BlueprintCallable, Category = "Personality")
-	void ReactToStimulus(FGameplayTag StimulusType, AActor* Source, float Intensity);
-	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
-
-	FORCEINLINE APatrolPath* GetPatrolPath() const { return PatrolPath; }
-
 	FORCEINLINE UAnimMontage* GetHookMontage() const { return HookMontage; }
-
+	
 	// Damageable Interface
 	virtual float TakeDamage(float DamageAmount, const FDamageEvent& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual float GetHealth() const override { return CurrentHealth; }
@@ -147,13 +123,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	AActor* LastKnownPlayerLocation;
 
-	// Perception
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-	class UAIPerceptionComponent* AIPerceptionComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-	class UPawnSensingComponent* PawnSensingComponent;
-
 	// Dialogue System
 	UPROPERTY(BlueprintReadOnly, Category = "Dialogue")
 	bool bIsInDialogue;
@@ -165,6 +134,10 @@ protected:
 	// Cached Components
 	UPROPERTY(VisibleAnywhere, Category="NPC | Dialogue")
 	UDialogueComponent* DialogueComponent;
+
+	UPROPERTY(EditAnywhere, Category="NPC | AI")
+	UShowcaseStateTreeComponent* StateTreeComponent;
+
 
 	// Damage immunity system
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
@@ -181,7 +154,7 @@ protected:
 	float DeathDelayTime = 10.0f; // Time before cleanup after death
     
 	FTimerHandle DeathCleanupTimer;
-    
+
 	// Damage events
 	UPROPERTY(BlueprintAssignable, Category = "Damage")
 	FOnDamageTaken OnDamageTakenDelegate;
@@ -208,27 +181,13 @@ protected:
 	void EnableRagdoll(const FVector& ImpulseLocation = FVector::ZeroVector, const FVector& ImpulseDirection = FVector::ZeroVector);
 	void ApplyDeathImpulse(const FVector& ImpulseLocation, const FVector& ImpulseDirection);
 
-
-	UPROPERTY(VisibleAnywhere, Category="NPC | AI")
-	ANPC_AIController* NPCAIController;
-
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 	
 	// Internal State Management
 	UFUNCTION()
 	void OnStateChanged(ENPCState OldState, ENPCState NewState);
-
-	// Perception Events
-	UFUNCTION()
-	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
-
-	UFUNCTION()
-	void OnTargetPerceptionUpdated(AActor* Actor, struct FAIStimulus Stimulus);
-
-	// Health Events
-	UFUNCTION()
-	void OnHealthChanged(float NewHealth, float OldHealth);
 
 	// IInteractionInterface implementation
 	virtual void BeginFocus() override;
@@ -236,18 +195,12 @@ protected:
 	virtual void BeginInteract() override;
 	virtual void EndInteract() override;
 	virtual void Interact(AShowcaseProjectCharacter* PlayerCharacter) override;
-	
+
 private:
 	void HandleDeath();
 	void CleanupAfterDeath();
 	void ProcessDamageEffects(float DamageAmount, const FDamageEvent& DamageEvent, AActor* DamageCauser);
 
-	//Behavior Tree for AI
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta=(AllowPrivateAccess="true"))
-	UBehaviorTree *BehaviorTree;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta=(AllowPrivateAccess="true"))
-	APatrolPath* PatrolPath;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation", meta=(AllowPrivateAccess="true"))
 	UAnimMontage* HookMontage;

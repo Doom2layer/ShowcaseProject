@@ -227,7 +227,6 @@ void AShowcaseHUD::OnWeaponStoppedFiring()
 // Fix your ShowDialogue implementation - you called the wrong method in DialogueComponent
 void AShowcaseHUD::ShowDialogue(const FDialogueNode& DialogueNode, UDialogueComponent* DialogueComponent)
 {
-    
 	if (!DialogueWidget && DialogueWidgetClass)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ShowcaseHUD: Creating dialogue widget"));

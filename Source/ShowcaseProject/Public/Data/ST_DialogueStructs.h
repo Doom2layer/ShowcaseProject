@@ -35,7 +35,7 @@ enum class EDialogueActionType : uint8
 USTRUCT(BlueprintType)
 struct FDialogueCondition
 {
-    GENERATED_BODY()
+    GENERATED_USTRUCT_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EDialogueConditionType ConditionType;
@@ -59,7 +59,7 @@ struct FDialogueCondition
 USTRUCT(BlueprintType)
 struct FDialogueAction
 {
-    GENERATED_BODY()
+    GENERATED_USTRUCT_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     EDialogueActionType ActionType;
@@ -86,7 +86,7 @@ struct FDialogueAction
 USTRUCT(BlueprintType)
 struct FDialogueChoice
 {
-    GENERATED_BODY()
+    GENERATED_USTRUCT_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FText ChoiceText;
@@ -112,7 +112,7 @@ struct FDialogueChoice
 USTRUCT(BlueprintType)
 struct FDialogueNode : public FTableRowBase
 {
-    GENERATED_BODY()
+    GENERATED_USTRUCT_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FGameplayTag NodeTag;

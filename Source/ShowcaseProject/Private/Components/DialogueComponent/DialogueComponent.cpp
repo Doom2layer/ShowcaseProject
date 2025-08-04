@@ -273,7 +273,7 @@ void UDialogueComponent::ExecuteAction(const FDialogueAction& Action)
 	case EDialogueActionType::ChangeRelation:
 		if (OwnerNPC && Action.ActionTag.IsValid())
 		{
-			OwnerNPC->SetFactionRelation(Action.ActionTag, Action.ActionValue);
+			// OwnerNPC->SetFactionRelation(Action.ActionTag, Action.ActionValue);
 		}
 		break;
 	case EDialogueActionType::PlayAnimation:
