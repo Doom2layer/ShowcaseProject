@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "GameplayTagContainer.h"
 #include "InteractionInterface.generated.h"
 
 class AShowcaseProjectCharacter;
@@ -79,6 +80,12 @@ public:
 
 	virtual void Interact(AShowcaseProjectCharacter* PlayerCharacter);
 
+	virtual FGameplayTagContainer GetGameplayTags() const;
+
+	virtual void SetGameplayTag(const FGameplayTag& Tag);
+
+	virtual void RemoveGameplayTag(const FGameplayTag& Tag);
+	
 	FInteractableData InteractableData;
 	
 };

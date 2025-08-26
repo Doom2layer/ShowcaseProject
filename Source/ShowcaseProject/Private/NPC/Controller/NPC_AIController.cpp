@@ -5,6 +5,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NPC/Character/NPC_BaseCharacter.h"
+#include "NPC/StateTree/ShowcaseStateTreeAIComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AISenseConfig_Hearing.h"
@@ -14,7 +15,7 @@ ANPC_AIController::ANPC_AIController(FObjectInitializer const& ObjectInitializer
 	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
 	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
-	PossessedNPCCharacter = nullptr;
+	StateTreeAIComponent = CreateDefaultSubobject<UShowcaseStateTreeAIComponent>(TEXT("StateTreeAIComponent"));
 
 	SetupPerceptionSystem();
 }
@@ -23,9 +24,11 @@ void ANPC_AIController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!PossessedNPCCharacter)
+	if (StateTreeAIComponent)
 	{
-		PossessedNPCCharacter = Cast<ANPC_BaseCharacter>(GetPawn());
+		StateTreeAIComponent->StartLogic();
+		UE_LOG(LogTemp, Log, TEXT("AI Controller %s has started logic for NPC %s with state tree %s"), *GetName(), 
+			*GetPawn()->GetName(), *StateTreeAIComponent->GetName());  
 	}
 }
 
@@ -33,7 +36,6 @@ void ANPC_AIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	PossessedNPCCharacter = Cast<ANPC_BaseCharacter>(InPawn);
     
 }
 

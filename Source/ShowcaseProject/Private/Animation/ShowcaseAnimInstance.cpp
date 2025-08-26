@@ -36,42 +36,37 @@ void UShowcaseAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		{
 			CheckEquippedWeapon();
 		}
-		else
-		{
-			bIsHandgunEquipped = false;
-			bIsRifleEquipped = false;
-			bIsShotgunEquipped = false;
-			
-		}
 	}
 }
 
 void UShowcaseAnimInstance::CheckEquippedWeapon()
 {
-	bIsHandgunEquipped = false;
-	bIsRifleEquipped = false;
-	bIsShotgunEquipped = false;
-
 	if (Character && Character->GetWeaponSystem())
 	{
-		AWeaponBase* EquippedWeapon = Character->GetWeaponSystem()->GetEquippedWeapon();
-		if (EquippedWeapon)
+		if (AWeaponBase* EquippedWeapon = Character->GetWeaponSystem()->GetEquippedWeapon())
 		{
 			switch (EquippedWeapon->GetWeaponItemData()->WeaponCategory)
 			{
 			case EWeaponCategory::Handgun:
 				bIsHandgunEquipped = true;
+				bIsRifleEquipped = false;
+				bIsShotgunEquipped = false;
 				break;
 			case EWeaponCategory::Rifle:
+				bIsHandgunEquipped = false;
 				bIsRifleEquipped = true;
+				bIsShotgunEquipped = false;
 				break;
 			case EWeaponCategory::Shotgun:
+				bIsHandgunEquipped = false;
+				bIsRifleEquipped = false;
 				bIsShotgunEquipped = true;
 				break;
 			default:
 				break;
 			}
-		}else
+		}
+		else
 		{
 			// No weapon equipped
 			bIsHandgunEquipped = false;

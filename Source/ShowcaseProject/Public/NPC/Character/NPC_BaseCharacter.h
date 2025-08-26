@@ -7,20 +7,20 @@
 #include "Interfaces/DamageableInterface.h"
 #include "Data/FST_NPCDataStruct.h"
 #include "Interfaces/InteractionInterface.h"
-#include "NPC/StateTree/ShowcaseStateTreeComponent.h"
 #include "NPC_BaseCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnWeaponSpotted, AActor*, WeaponHolder, bool, bIsDrawn, float, ReactionIntensity);
-
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnWeaponSpotted, AActor*, WeaponHolder, bool, bIsDrawn, float,
+                                               ReactionIntensity);
 class ANPC_AIController;
 class UDialogueComponent;
-class UStateTreeComponent;
+//class UStateTreeComponent;
 class APatrolPath;
 class UInputComponent;
 struct FST_NPCDataStruct;
 class UAnimMontage;
 class AActor;
+class UContextualAnimSceneActorComponent;
+class UMotionWarpingComponent;
 
 UENUM(BlueprintType)
 enum class ENPCState : uint8
@@ -80,7 +80,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
+	
 	FORCEINLINE UAnimMontage* GetHookMontage() const { return HookMontage; }
 	
 	// Damageable Interface
@@ -129,16 +129,21 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Dialogue")
 	FGameplayTag CurrentDialogueNode;
-	
+
 protected:
 	// Cached Components
 	UPROPERTY(VisibleAnywhere, Category="NPC | Dialogue")
 	UDialogueComponent* DialogueComponent;
 
-	UPROPERTY(EditAnywhere, Category="NPC | AI")
-	UShowcaseStateTreeComponent* StateTreeComponent;
+//	UPROPERTY(EditAnywhere, Category="NPC | AI")
+//	UShowcaseStateTreeComponent* StateTreeComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UContextualAnimSceneActorComponent* ContextualAnimSceneActor;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UMotionWarpingComponent* MotionWarpingComponent;
+	
 	// Damage immunity system
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	bool bIsInvulnerable = false;
@@ -163,14 +168,7 @@ protected:
 	FOnDeath OnDeathDelegate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
-	TMap<FName, float> BoneDamageMultipliers = {
-		{TEXT("head"), 2.0f},
-		{TEXT("Head"), 2.0f},
-		{TEXT("skull"), 2.0f},
-		{TEXT("spine_03"), 1.5f}, // Upper torso
-		{TEXT("spine_02"), 1.2f}, // Mid torso
-		{TEXT("spine_01"), 1.0f}, // Lower torso
-	};
+	TMap<FName, float> BoneDamageMultipliers;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	float RagdollImpulseStrength = 500.0f;
@@ -185,17 +183,16 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	
-	// Internal State Management
-	UFUNCTION()
-	void OnStateChanged(ENPCState OldState, ENPCState NewState);
-
 	// IInteractionInterface implementation
 	virtual void BeginFocus() override;
 	virtual void EndFocus() override;
 	virtual void BeginInteract() override;
 	virtual void EndInteract() override;
 	virtual void Interact(AShowcaseProjectCharacter* PlayerCharacter) override;
-
+	virtual FGameplayTagContainer GetGameplayTags() const override;
+	virtual void SetGameplayTag(const FGameplayTag& Tag) override;
+	virtual void RemoveGameplayTag(const FGameplayTag& Tag) override;
+	
 private:
 	void HandleDeath();
 	void CleanupAfterDeath();
@@ -212,5 +209,8 @@ private:
 	// Internal State
 	float CurrentAlertness;
 	float TimeInCurrentState;
+
+	// Gameplay tags for smart objects
+	FGameplayTagContainer GTContainer;
 
 };

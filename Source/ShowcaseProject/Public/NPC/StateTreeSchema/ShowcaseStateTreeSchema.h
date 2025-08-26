@@ -6,6 +6,7 @@
 #include "GameplayStateTreeModule/Public/Components/StateTreeAIComponentSchema.h"
 #include "ShowcaseStateTreeSchema.generated.h"
 
+class ANPC_BaseCharacter;
 /**
  * 
  */
@@ -13,5 +14,5 @@ UCLASS(BlueprintType, EditInlineNew, CollapseCategories, meta = (DisplayName = "
 class SHOWCASEPROJECT_API UShowcaseStateTreeSchema : public UStateTreeComponentSchema
 {
 	GENERATED_BODY()
-	
+
 };

@@ -61,12 +61,12 @@ private:
 	bool bIsFalling;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon Animation", meta=(AllowPrivateAccess="true"))
-	bool bIsShotgunEquipped = false;
+	bool bIsShotgunEquipped;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon Animation", meta=(AllowPrivateAccess="true"))
-	bool bIsRifleEquipped = false;
+	bool bIsRifleEquipped;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon Animation", meta=(AllowPrivateAccess="true"))
-	bool bIsHandgunEquipped = false;
+	bool bIsHandgunEquipped;
 	
 };

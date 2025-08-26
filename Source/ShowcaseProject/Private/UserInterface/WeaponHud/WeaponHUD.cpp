@@ -135,22 +135,6 @@ void UWeaponHUD::UpdateCrosshair(UTexture2D* CrosshairTexture, FLinearColor Cros
 	}
 }
 
-void UWeaponHUD::ShowCrosshair()
-{
-	if (CrosshairImage)
-	{
-		CrosshairImage->SetVisibility(ESlateVisibility::Visible);
-	}
-}
-
-void UWeaponHUD::HideCrosshair()
-{
-	if (CrosshairImage)
-	{
-		CrosshairImage->SetVisibility(ESlateVisibility::Collapsed);
-	}
-}
-
 void UWeaponHUD::ShowWithAnimation()
 {
 	UE_LOG(LogTemp, Log, TEXT("WeaponHUD: Showing with animation"));

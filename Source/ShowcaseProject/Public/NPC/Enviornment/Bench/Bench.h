@@ -17,17 +17,4 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* BenchMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bench Settings")
-	float SeatSpacing = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bench Settings")
-	float SeatHeight = 50.0f;
-
-private:
-	void SetupBenchDefaults();
-	void GenerateBenchSlots();
 };

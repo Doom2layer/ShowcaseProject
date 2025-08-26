@@ -76,9 +76,6 @@ AShowcaseProjectCharacter::AShowcaseProjectCharacter()
 	SetupStimuliSource();
 }
 
-
-
-
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -305,8 +302,14 @@ void AShowcaseProjectCharacter::BeginAim()
 		{
 			if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 			{
-				PlayerController->SetViewTargetWithBlend(this, 0.2f, VTBlend_Linear, 0.0f, false);
-				PlayerController->PlayerCameraManager->SetFOV(AimFOV);
+				PlayerController->SetViewTargetWithBlend(this, 0.5f, VTBlend_EaseIn, 0.0f, false);
+				float TargetFOV = FMath::FInterpTo(
+					PlayerController->PlayerCameraManager->GetFOVAngle(),
+					AimFOV,
+					GetWorld()->GetDeltaSeconds(),
+					0.5f 
+				);
+				PlayerController->PlayerCameraManager->SetFOV(TargetFOV);
 			}
 		}
 		
@@ -340,7 +343,6 @@ void AShowcaseProjectCharacter::EndAim()
 		if (HUD && WeaponSystemComponent->GetEquippedWeapon())
 		{
 			HUD->GetWeaponHUD()->StopAiming();
-			HUD->GetWeaponHUD()->HideCrosshair();
 		}
 		
 		UE_LOG(LogTemplateCharacter, Log, TEXT("Stopped aiming"));

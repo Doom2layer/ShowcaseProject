@@ -174,7 +174,6 @@ void AShowcaseHUD::UpdateWeaponDisplay(AWeaponBase* EquippedWeapon)
 			EquippedWeapon->GetWeaponItemData()->WeaponData.CrosshairColor,
 			EquippedWeapon->GetWeaponItemData()->WeaponData.CrosshairSize
 		);
-		WeaponHUDWidget->ShowCrosshair();
 
 		if (GetOwningPlayerController())
 		{
@@ -187,7 +186,6 @@ void AShowcaseHUD::UpdateWeaponDisplay(AWeaponBase* EquippedWeapon)
 	}
 	else
 	{
-		WeaponHUDWidget->HideCrosshair();
 		WeaponHUDWidget->ForceHide();
 	}
 }

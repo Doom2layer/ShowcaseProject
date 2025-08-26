@@ -22,7 +22,7 @@ public:
 	void AssignStateTree(UStateTree* NewStateTree);
 
 	UFUNCTION(Category="State Tree")
-		FORCEINLINE FStateTreeReference GetAssignedStateTree() const { return StateTreeRef; }
+	FORCEINLINE FStateTreeReference GetAssignedStateTree() const { return StateTreeRef; }
 	
 protected:
 	virtual void BeginPlay() override;

@@ -23,7 +23,7 @@ struct FST_NPCDataStruct : public FTableRowBase
     FString NPCDescription;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Identity")
-    UTexture2D* NPCPortrait;
+    TSoftObjectPtr<UTexture2D> NPCPortrait;
 
     // Faction & Relationship System
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Faction")
@@ -79,40 +79,51 @@ struct FST_NPCDataStruct : public FTableRowBase
 
     // Dialogue System
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue")
-    UDataTable* DialogueTable;
+    TSoftObjectPtr<UDataTable> DialogueTable; 
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue")
     FGameplayTag InitialDialogueNode;
 
     // Visual & Audio
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Presentation")
-    USkeletalMesh* NPCMesh;
+    TSoftObjectPtr<USkeletalMesh> NPCMesh;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Presentation")
-    TSubclassOf<UNPC_AnimInstance> AnimBlueprintClass;
+    TSoftClassPtr<UNPC_AnimInstance> AnimBlueprintClass; 
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Presentation")
-    TArray<USoundBase*> VoiceLines;
+    TArray<TSoftObjectPtr<USoundBase>> VoiceLines; 
 
     FST_NPCDataStruct()
     {
         NPCName = TEXT("Generic NPC");
         NPCDescription = TEXT("A generic non-player character");
-        
+        NPCPortrait = nullptr;
+        Neuroticism = 0.5f;
         Aggressiveness = 0.5f;
         Courage = 0.5f;
         Curiosity = 0.5f;
         Sociability = 0.5f;
         Alertness = 0.5f;
-        
+        DialogueTable = nullptr;
+        NPCMesh = nullptr;
         MaxHealth = 100.0f;
         WeaponDrawTolerance = 0.5f;
         FleeHealthThreshold = 0.3f;
         TakeCoverHealthThreshold = 0.6f;
-        
         bCanSpeak = true;
         bCanFight = false;
         bCanFlee = true;
         bCanTakeCover = true;
+        
+        // Clear the faction relations map to ensure clean state
+        FactionRelations.Empty();
+    }
+
+    // Explicit destructor to ensure proper cleanup
+    virtual ~FST_NPCDataStruct() override
+    {
+        // Ensure map is properly cleared
+        FactionRelations.Empty();
     }
 };

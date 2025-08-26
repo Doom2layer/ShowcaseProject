@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "NPC_AnimInstance.generated.h"
 
+class IInteractionInterface;
 class UCharacterMovementComponent;
 class ANPC_BaseCharacter;
 /**
@@ -45,4 +46,26 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
 	bool bIsFalling;
+
+	//World Location
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	FVector WorldLocation;
+	
+	//Displacement Amount
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float DisplacementAmount;
+
+	//Displacement speed
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	float DisplacementSpeed;
+
+	// bIsFirstFrame
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement", meta=(AllowPrivateAccess="true"))
+	bool bIsFirstFrame = true;
+
+	UPROPERTY(VisibleAnywhere, Category="Character | Interaction")
+	TScriptInterface<IInteractionInterface> TargetInteractable;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Sitting", meta=(AllowPrivateAccess="true"))
+	bool bIsSitting = false;
 };

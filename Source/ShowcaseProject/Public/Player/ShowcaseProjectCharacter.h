@@ -16,6 +16,7 @@ class AShowcaseHUD;
 class UItemBase;
 class ABaseWeapon;
 class UShowcaseAnimInstance;
+class UContextualAnimSceneActorComponent;
 
 USTRUCT()
 struct FInteractionData
@@ -63,6 +64,8 @@ public:
 	FORCEINLINE AShowcaseHUD* GetHUD() const { return HUD; }
 	FORCEINLINE bool IsPlayingAnimation() const { return bIsPlayingAnimation; }
 	void UpdateInteractionWidget() const;
+	
+
 
 protected:
 	//PROPERTIES
@@ -74,6 +77,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent *FollowCamera;
 
+	/** Contextual Animation Scene Actor Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UContextualAnimSceneActorComponent* ContextualAnimSceneActor;
+	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext *DefaultMappingContext;

@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "SmartObjectRuntime.h"
 #include "NPC_AIController.generated.h"
 
+class UShowcaseStateTreeAIComponent;
 struct FCachedBlackboardData;
-class ANPC_BaseCharacter;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Hearing;
 struct FAIStimulus;
@@ -23,7 +24,6 @@ class SHOWCASEPROJECT_API ANPC_AIController : public AAIController
 public:
 	explicit ANPC_AIController(FObjectInitializer const& ObjectInitializer);
 
-	
 	UPROPERTY(BlueprintReadWrite)
 	float DetectionLevel = 0.0f;
 
@@ -40,9 +40,11 @@ protected:
 	
 	UAISenseConfig_Sight* SightConfig;
 	UAISenseConfig_Hearing* HearingConfig;
+	
+	UPROPERTY(EditAnywhere, Category="NPC | AI")
+	UShowcaseStateTreeAIComponent* StateTreeAIComponent;
 
 private:
-	ANPC_BaseCharacter* PossessedNPCCharacter;
 	void SetupPerceptionSystem();
 
 };

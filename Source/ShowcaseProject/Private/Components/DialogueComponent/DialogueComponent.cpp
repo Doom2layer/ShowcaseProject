@@ -103,6 +103,7 @@ void UDialogueComponent::EndDialogue()
 	if (OwnerNPC)
 	{
 		OwnerNPC->SetNPCState(OwnerNPC->PreviousState);
+		OwnerNPC->EndDialogue();
 	}
 
 	OnDialogueEnd.Broadcast();

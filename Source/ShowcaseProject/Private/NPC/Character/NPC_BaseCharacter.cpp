@@ -4,11 +4,13 @@
 #include "NPC/Character/NPC_BaseCharacter.h"
 
 #include "BrainComponent.h"
+#include "ContextualAnimSceneActorComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "NPC/Controller/NPC_AIController.h"
 #include "Player/ShowcaseProjectCharacter.h"
 #include "Components/DialogueComponent/DialogueComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "MotionWarpingComponent.h"
 
 // Sets default values
 ANPC_BaseCharacter::ANPC_BaseCharacter()
@@ -17,7 +19,9 @@ ANPC_BaseCharacter::ANPC_BaseCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	DialogueComponent = CreateDefaultSubobject<UDialogueComponent>(TEXT("DialogueComponent"));
-	StateTreeComponent = CreateDefaultSubobject<UShowcaseStateTreeComponent>(TEXT("StateTreeComponent"));
+//	StateTreeComponent = CreateDefaultSubobject<UShowcaseStateTreeComponent>(TEXT("StateTreeComponent"));
+	ContextualAnimSceneActor = CreateDefaultSubobject<UContextualAnimSceneActorComponent>(TEXT("ContextualAnimSceneActor"));
+	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarpingComponent"));
 	MaxHealth = 100.0f;
 	CurrentHealth = MaxHealth;
 	bIsInvulnerable = false;
@@ -55,9 +59,6 @@ void ANPC_BaseCharacter::BeginPlay()
 	InteractableData.Quantity = 0;
 	InteractableData.InteractionDuration = 0.0f;
 
-	//Log the StateTree
-	UE_LOG(LogTemp, Log, TEXT("NPC %s StateTree: %s"), *GetName(), *StateTreeComponent->GetName());
-    
 	// Initialize from data table if needed
 	InitializeFromDataTable();
 
@@ -92,16 +93,10 @@ void ANPC_BaseCharacter::BeginDestroy()
 	Super::BeginDestroy();
 }
 
-void ANPC_BaseCharacter::OnStateChanged(ENPCState OldState, ENPCState NewState)
-{
-	return;
-}
-
 // Called every frame
 void ANPC_BaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -146,8 +141,6 @@ void ANPC_BaseCharacter::SetNPCState(ENPCState NewState)
 		CurrentState = NewState;
 		TimeInCurrentState = 0.0f;
 
-		OnStateChanged(OldState, NewState);
-
 		//Update blackboard if we have an AI controller
 		if (ANPC_AIController* AIController = Cast<ANPC_AIController>(GetController()))
 		{
@@ -170,6 +163,12 @@ void ANPC_BaseCharacter::StartDialogue(AActor* DialoguePartner)
 {
 	if (DialogueComponent)
 	{
+		// stop the ai from moving
+		if (ANPC_AIController* AIController = Cast<ANPC_AIController>(GetController()))
+		{
+			AIController->StopMovement();
+			AIController->GetBrainComponent()->StopLogic(TEXT("NPC is talking"));
+		}
 		DialogueComponent->StartDialogue(DialoguePartner, NPCData.InitialDialogueNode);
 	}
 }
@@ -178,6 +177,12 @@ void ANPC_BaseCharacter::EndDialogue()
 {
 	if (DialogueComponent)
 	{
+		// resume AI movement
+		if (ANPC_AIController* AIController = Cast<ANPC_AIController>(GetController()))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Resuming AI logic for NPC %s"), *GetName());
+			AIController->GetBrainComponent()->StartLogic();
+		}
 		DialogueComponent->EndDialogue();
 	}
 }
@@ -220,6 +225,21 @@ void ANPC_BaseCharacter::Interact(AShowcaseProjectCharacter* PlayerCharacter)
 		UE_LOG(LogTemp, Warning, TEXT("Interact called with null PlayerCharacter"));
 		return;
 	}
+
+	// GetGameplayTags() and print them in console
+	FGameplayTagContainer MyTags = GetGameplayTags();
+	for (FGameplayTag Tag : MyTags)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Tag: %s"), *Tag.ToString());
+		
+	}
+
+	if (MyTags.HasTag(FGameplayTag::RequestGameplayTag(TEXT("SmartObject.Interaction"))))
+	{
+		UE_LOG(LogTemp, Log, TEXT("NPC %s is sitting"), *GetName());
+		return; // Do not start dialogue if sitting
+	}
+
 	//Check if we can start dialogue
 	if (CanStartDialogue(PlayerCharacter))
 	{
@@ -472,5 +492,20 @@ void ANPC_BaseCharacter::ProcessDamageEffects(float DamageAmount, const FDamageE
 		// Spawn blood/impact effect at ProjectileEvent->HitLocation
 		UE_LOG(LogTemp, Log, TEXT("Blood effect should spawn at: %s"), *ProjectileEvent->HitLocation.ToString());
 	}
+}
 
+FGameplayTagContainer ANPC_BaseCharacter::GetGameplayTags() const
+{
+	return GTContainer;
+}
+
+void ANPC_BaseCharacter::SetGameplayTag(const FGameplayTag& Tag)
+{
+	GTContainer.AddTag(Tag);
+}
+
+void ANPC_BaseCharacter::RemoveGameplayTag(const FGameplayTag& Tag)
+{
+	UE_LOG(LogTemp, Log, TEXT("Removing tag %s from NPC %s"), *Tag.ToString(), *GetName());
+	GTContainer.RemoveTag(Tag);
 }

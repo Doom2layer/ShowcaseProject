@@ -24,6 +24,11 @@ public class ShowcaseProject : ModuleRules
 			"Slate",
 			"SlateCore",
 			"StateTreeModule",
+			"SmartObjectsModule",
+			"GameplayBehaviorSmartObjectsModule",
+			"MotionWarping",
+			"GameplayInteractionsModule",
+			"ContextualAnimation",
 			"GameplayStateTreeModule",
 		});
 	}

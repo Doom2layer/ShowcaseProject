@@ -340,7 +340,7 @@ void AWeaponBase::FireBullet()
 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
 		PC->DeprojectScreenPositionToWorld(
-			CrosshairScreenPosition.X, 
+			CrosshairScreenPosition.X,
 			CrosshairScreenPosition.Y, 
 			CrosshairWorldLocation, 
 			CrosshairWorldDirection

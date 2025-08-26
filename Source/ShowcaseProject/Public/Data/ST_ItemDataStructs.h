@@ -129,6 +129,35 @@ struct FItemWeaponData
     
 	UPROPERTY(EditAnywhere, Category = "Weapon Data | UI")
 	float CrosshairSize = 1.0f;
+
+	FItemWeaponData()
+	{
+		Damage = 0.0f;
+		AmmoType = EAmmoType::PistolAmmo;
+		ShotgunPelletCount = 1;
+		Range = 1000.0f;
+		FireRate = 0.5f;
+		ReloadTime = 2.0f;
+		Accuracy = 1.0f;
+		MagazineSize = 12;
+		MaxAmmo = 120;
+		RecoilIntensity = 1.0f;
+		SpreadAngle = 0.0f;
+		bIsAutomatic = false;
+		AimDownSightTime = 0.2f;
+		ProjectileSpeed = 3000.0f;
+		ProjectileGravityScale = 0.0f;
+		FireEffectMuzzle = nullptr;
+		FireSound = nullptr;
+		EmptySound = nullptr;
+		FireMontage = nullptr;
+		CrosshairTexture = nullptr;
+		CrosshairColor = FLinearColor::White;
+		CrosshairSize = 1.0f;
+		WeaponActorClass = nullptr;
+		ProjectileClass = nullptr;
+		ReloadMontage = nullptr;
+	}
 };
 
 USTRUCT()
@@ -150,6 +179,15 @@ struct FItemAmmoData
     
 	UPROPERTY(EditAnywhere, Category="Ammo Data")
 	float PenetrationPower;
+
+	FItemAmmoData()
+	{
+		AmmoType = EAmmoType::PistolAmmo;
+		AmmoPerBox = 30;  // Default to 30 rounds per box
+		DamageModifier = 1.0f;  // Default no damage modification
+		bIsPenetrating = false;  // Default not penetrating
+		PenetrationPower = 0.0f;  // Default no penetration power
+	}
 };
 
 USTRUCT()
@@ -162,6 +200,12 @@ struct FItemStatistics
 
 	UPROPERTY(EditAnywhere)
 	bool bIsDiscardable;
+
+	FItemStatistics()
+	{
+		HealthRestoration = 0.0f; // Default no health restoration
+		bIsDiscardable = true; // Default items can be discarded
+	}
 };
 
 USTRUCT()
@@ -195,6 +239,13 @@ struct FItemNumericData
 
 	UPROPERTY(EditAnywhere)
 	bool bIsStackable;
+
+	FItemNumericData()
+	{
+		Weight = 0.0f; // Default weight
+		MaxStackSize = 1; // Default max stack size
+		bIsStackable = false; // Default items are not stackable
+	}
 };
 
 USTRUCT()
@@ -216,6 +267,15 @@ struct FItemAssetData
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* UseSound;
+
+	FItemAssetData()
+	{
+		Icon = nullptr; // Default icon
+		Mesh = nullptr; // Default static mesh
+		SkeletalMesh = nullptr; // Default skeletal mesh
+		PickupSound = nullptr; // Default pickup sound
+		UseSound = nullptr; // Default use sound
+	}
 };
 
 
@@ -253,5 +313,17 @@ struct FItemData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, Category="Item Data")
 	FItemAssetData ItemAssetData;
+
+	FItemData()
+	{
+		ItemID = NAME_None; // Default ItemID
+		WeaponCategory = EWeaponCategory::Handgun; // Default weapon category
+		ItemType = EItemType::Weapon; // Default item type
+		ItemQuality = EItemQuality::Common; // Default item quality
+		ItemStatistics = FItemStatistics(); // Initialize statistics
+		ItemTextData = FItemTextData(); // Initialize text data
+		ItemNumericData = FItemNumericData(); // Initialize numeric data
+		ItemAssetData = FItemAssetData(); // Initialize asset data
+	}
 
 };

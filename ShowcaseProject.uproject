@@ -57,6 +57,10 @@
 		{
 			"Name": "ContextualAnimation",
 			"Enabled": true
+		},
+		{
+			"Name": "GameplayBehaviors",
+			"Enabled": true
 		}
 	]
 }

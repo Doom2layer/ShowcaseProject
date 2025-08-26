@@ -47,12 +47,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateCrosshair(UTexture2D* CrosshairTexture, FLinearColor CrosshairColor, float CrosshairSize);
 
-	UFUNCTION(BlueprintCallable)
-	void ShowCrosshair();
-
-	UFUNCTION(BlueprintCallable)
-	void HideCrosshair();
-	
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UImage* WeaponIconImage;

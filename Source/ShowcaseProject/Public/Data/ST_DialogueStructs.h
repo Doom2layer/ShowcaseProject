@@ -151,5 +151,6 @@ struct FDialogueNode : public FTableRowBase
     {
         bIsPlayerNode = false;
         AutoAdvanceTime = 0.0f;
+        VoiceClip = nullptr;
     }
 };
