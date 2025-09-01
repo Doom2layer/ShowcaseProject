@@ -3,17 +3,15 @@
 
 #include "World/Weather.h"
 
-#include "Components/PostProcessComponent.h"
 #include "Components/SkyAtmosphereComponent.h"
 #include "Components/VolumetricCloudComponent.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "World/Lightning.h"
 
 // Sets default values
 AWeather::AWeather()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
@@ -48,23 +46,63 @@ void AWeather::Tick(float DeltaTime)
 void AWeather::Dark()
 {
 	SetAtmosphere(FLinearColor(0.411458f, 0.411458f, 0.411458f), -1.0f, 1.0f, -0.2f);
+	bIsDark = true;
+	bIsClear = false;
+	bIsCloudy = false;
 }
 
 void AWeather::Cloudy()
 {
 	SetAtmosphere(FLinearColor(0.174647f, 0.40724f, 1.0f), 1.0f, 0.0f, -0.2f);
+	bIsDark = false;
+	bIsClear = false;
+	bIsCloudy = true;
 }
 
 
 void AWeather::Clear()
 {
 	SetAtmosphere(FLinearColor(0.174647f, 0.40724f, 1.0f), 1.0f, 0.0f, -1.0f);
+	bIsDark = false;
+	bIsClear = true;
+	bIsCloudy = false;
 }
 
+void AWeather::ToggleRain()
+{
+	if (IsValid(LightningActor))
+	{
+		LightningActor->DestroyChildActor();
+		LightningActor = nullptr;
+	}
+
+	else
+	{
+		LightningActor = NewObject<UChildActorComponent>(this, UChildActorComponent::StaticClass(), TEXT("LightningComponent"));
+        
+		if (IsValid(LightningActor))
+		{
+			// Configure component properties BEFORE registration
+			LightningActor->bEditableWhenInherited = true;
+			LightningActor->SetChildActorClass(LightningTemplate);
+            
+			// Register the component with the world
+			LightningActor->RegisterComponent();
+            
+			// Create the child actor
+			LightningActor->CreateChildActor();
+
+			if (ALightning* Lightning = Cast<ALightning>(LightningActor->GetChildActor()))
+			{
+				Lightning->PostProcessVolume = PostProcessVolume;
+			}
+		}
+	}
+}
 
 void AWeather::SetAtmosphere(FLinearColor RayleighScattering, float AutoExposureBias, float StormClouds, float CloudCoverage)
 {
-	if (!IsValid(SkyAtmosphereComponent) || !IsValid(PostProcessComponent) || !IsValid(VolumetricCloudComponent))
+	if (!IsValid(SkyAtmosphereComponent) || !IsValid(PostProcessVolume) || !IsValid(VolumetricCloudComponent))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SkyAtmosphereComponent, PostProcessComponent or VolumetricCloudComponent is not set in Weather actor."));
 		return;
@@ -76,8 +114,8 @@ void AWeather::SetAtmosphere(FLinearColor RayleighScattering, float AutoExposure
 	W_CloudCoverage = CloudCoverage;
 	
 	SkyAtmosphereComponent->SetRayleighScattering(RayleighScattering);
-	PostProcessComponent->Settings.bOverride_AutoExposureBias = true;
-	PostProcessComponent->Settings.AutoExposureBias = AutoExposureBias;
+	PostProcessVolume->Settings.bOverride_AutoExposureBias = true;
+	PostProcessVolume->Settings.AutoExposureBias = AutoExposureBias;
 	
 	if (IsValid(CloudMaterialInstance))
 	{

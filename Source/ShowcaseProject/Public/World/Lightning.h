@@ -5,6 +5,7 @@
 #include "Components/PostProcessComponent.h"
 #include "Lightning.generated.h"
 
+class UNiagaraComponent;
 class UTimelineComponent;
 
 UCLASS()
@@ -15,8 +16,19 @@ class SHOWCASEPROJECT_API ALightning : public AActor
 public:
 	ALightning();
 
-	UPROPERTY(EditAnywhere, Category="Sound")
+	virtual void Tick(float DeltaSeconds) override;
+
+	UPROPERTY(EditAnywhere, Category="Lightning | Scene")
+	USceneComponent* SceneRoot;
+
+	UPROPERTY(EditAnywhere, Category="Lightning | Sound")
+	UAudioComponent* RainSound;
+
+	UPROPERTY(EditAnywhere, Category="Lightning | Sound")
 	TArray<USoundBase*> ThunderSounds;
+	
+	UPROPERTY(EditAnywhere, Category="Lightning | Rain")
+	UNiagaraComponent* NiagaraRainSystem;
 	
 	UPROPERTY(EditAnywhere, Category="Lightning")
 	TArray<UTexture2D*> LightningTextures;
@@ -33,8 +45,10 @@ public:
 	UPROPERTY(EditAnywhere, Category="Lightning")
 	float ExposureDuration = 0.2f;
 
+	float OriginalExposure = 0.0f;
+
 	UPROPERTY(EditAnywhere, Category="Lightning")
-	UPostProcessComponent* PostProcessComponent;
+	APostProcessVolume* PostProcessVolume;
 	
 	static ALightning* SpawnNearPlayer(UWorld* World);
 
@@ -55,7 +69,6 @@ private:
 	FTimerHandle ReplayTimerHandle;
 	FTimerHandle ExposureResetTimerHandle;
 	int32 CurrentTextureIndex = INDEX_NONE;
-	float OriginalExposure = 0.0f;
 
 	UFUNCTION()
 	void OnTimelineUpdate(float Value);

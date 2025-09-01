@@ -1,26 +1,81 @@
 #include "World/Lightning.h"
+
+#include "NiagaraComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Components/PostProcessComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Player/ShowcaseProjectCharacter.h"
+#include "World/Weather.h"
 
 ALightning::ALightning()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
+
+    PrimaryActorTick.TickInterval = 0.5f;
+
+    SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
 
     LightningPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LightningPlane"));
 
+    NiagaraRainSystem = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RainParticleSystem"));
+    
     LightningTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("LightningTimeline"));
+
+    RainSound = CreateDefaultSubobject<UAudioComponent>(TEXT("RainSound"));
+
+    RootComponent = SceneRoot;
+
+    LightningPlane->SetupAttachment(SceneRoot);
+
+    NiagaraRainSystem->SetupAttachment(SceneRoot);
+    
+}
+
+void ALightning::Tick(float DeltaSeconds)
+{
+    if (NiagaraRainSystem)
+    {
+        // Get the player and set the rain position to the player position
+        if (AShowcaseProjectCharacter* PC = Cast<AShowcaseProjectCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))) 
+        {
+            FVector PlayerLocation = PC->GetActorLocation();
+            NiagaraRainSystem->SetWorldLocation({PlayerLocation.X, PlayerLocation.Y, PlayerLocation.Z + 1000.0f});
+        }
+    }
 }
 
 void ALightning::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Store original exposure
-    if (IsValid(PostProcessComponent))
+    if (NiagaraRainSystem)
     {
-        OriginalExposure = PostProcessComponent->Settings.AutoExposureBias;
+        NiagaraRainSystem->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+    }
+
+    // Store original exposure
+    if (IsValid(PostProcessVolume))
+    {
+        OriginalExposure = PostProcessVolume->Settings.AutoExposureBias;
+        UE_LOG(LogTemp, Warning, TEXT("Original Exposure stored: %f"), OriginalExposure);
+    }
+    else
+    {
+        TArray<AActor*> FoundWeathers;
+        UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeather::StaticClass(), FoundWeathers);
+        for (AActor* WeatherActor : FoundWeathers)
+        {
+            AWeather* Weather = Cast<AWeather>(WeatherActor);
+            if (WeatherActor)
+            {
+                PostProcessVolume = Weather->PostProcessVolume;
+                OriginalExposure = PostProcessVolume->Settings.AutoExposureBias;
+                UE_LOG(LogTemp, Warning, TEXT("Original Exposure stored: %f"), OriginalExposure);
+                break;
+            }
+        }
     }
     
     // Setup timeline
@@ -124,21 +179,25 @@ void ALightning::PlayThunderSound()
 
 void ALightning::AdjustExposure()
 {
-    if (IsValid(PostProcessComponent))
+    if (IsValid(PostProcessVolume))
     {
-        PostProcessComponent->Settings.bOverride_AutoExposureBias = true;
-        PostProcessComponent->Settings.AutoExposureBias = ExposureIntensity;
+        PostProcessVolume->Settings.bOverride_AutoExposureBias = true;
+        PostProcessVolume->Settings.AutoExposureBias = ExposureIntensity;
         UE_LOG(LogTemp, Warning, TEXT("Exposure adjusted to: %f"), ExposureIntensity);
         GetWorldTimerManager().SetTimer(ExposureResetTimerHandle, this, &ALightning::ResetExposure, ExposureDuration, false);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PostProcessComponent is not valid."));
     }
 }
 
 void ALightning::ResetExposure()
 {
-    if (IsValid(PostProcessComponent))
+    if (IsValid(PostProcessVolume))
     {
-        PostProcessComponent->Settings.bOverride_AutoExposureBias = true;
-        PostProcessComponent->Settings.AutoExposureBias = OriginalExposure;
+        PostProcessVolume->Settings.bOverride_AutoExposureBias = true;
+        PostProcessVolume->Settings.AutoExposureBias = OriginalExposure;
         UE_LOG(LogTemp, Warning, TEXT("Exposure reset to original: %f"), OriginalExposure);
     }
 }
@@ -171,7 +230,7 @@ void ALightning::PositionRelativeToPlayer()
 
     
     
-    const FRotator SpawnRotation(0.0f, UKismetMathLibrary::FindLookAtRotation(SpawnLocation, PlayerLocation).Yaw - 90, 90.0f); // Pitch, Yaw, Roll
+    const FRotator SpawnRotation(0.0f, UKismetMathLibrary::FindLookAtRotation(SpawnLocation, PlayerLocation).Yaw - 150, 0.0f); // Pitch, Yaw, Roll
 
     SetActorLocation(SpawnLocation);
     SetActorRotation(SpawnRotation);

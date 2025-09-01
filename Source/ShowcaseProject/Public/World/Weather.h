@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Weather.generated.h"
 
+class ALightning;
 class UVolumetricCloudComponent;
 class AVolumetricCloud;
 class UPostProcessComponent;
@@ -29,6 +30,9 @@ public:
 	void Cloudy();
 
 	UFUNCTION(CallInEditor, Category="Weather")
+	void ToggleRain();
+	
+	UFUNCTION(CallInEditor, Category="Weather")
 	void Clear();
 
 	UFUNCTION()
@@ -41,14 +45,20 @@ public:
 	USkyAtmosphereComponent* SkyAtmosphereComponent;
 
 	UPROPERTY(EditAnywhere, Category="Weather")
-	UPostProcessComponent* PostProcessComponent;
+	APostProcessVolume* PostProcessVolume;
 
 	UPROPERTY(EditAnywhere, Category="Weather")
 	UVolumetricCloudComponent* VolumetricCloudComponent;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* CloudMaterialInstance;
+
+	UPROPERTY(EditAnywhere, Category="Weather")
+	TSubclassOf<ALightning> LightningTemplate;
 	
+	UPROPERTY(VisibleAnywhere)
+	UChildActorComponent* LightningActor;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -76,5 +86,14 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, Category="Atmosphere Values")
 	float W_TargetCloudCoverage;
+	
+	UPROPERTY()
+	bool bIsDark;
+
+	UPROPERTY()
+	bool bIsCloudy;
+
+	UPROPERTY()
+	bool bIsClear;
 
 };
